@@ -11,7 +11,7 @@ import {
   getPromos as fetchPromos, upsertPromo, deletePromo as deletePromoRow,
   createOrder, trackOrderPublic, getAllOrders, updateOrderStatus as updateOrderStatusRow,
   adminSignIn, adminSignOut, getAdminSession, onAdminAuthChange,
-} from "./lib/data";
+} from "./data";
 
 /* ============================================================
    DESIGN TOKENS — light SaaS surface, blue = trust, green = done,
