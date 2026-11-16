@@ -2035,7 +2035,7 @@ function CopyCenterOrderAppInner() {
             </div>
             <div className="bg-white border border-slate-200 rounded-xl p-5 flex gap-3 items-start">
               <Phone className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div><p className="text-sm font-semibold text-slate-800 mb-0.5">{T.contact.phoneLabel}</p><a href="tel:+32465959260" className="text-xs text-slate-500 hover:text-blue-600 transition-colors">+32 465 95 92 60</a></div>
+              <div><p className="text-sm font-semibold text-slate-800 mb-0.5">{T.contact.phoneLabel}</p><a href="tel:+32465874193" className="text-xs text-slate-500 hover:text-blue-600 transition-colors">+32 465 87 41 93</a></div>
             </div>
             <div className="bg-white border border-slate-200 rounded-xl p-5 flex gap-3 items-start">
               <Mail className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
