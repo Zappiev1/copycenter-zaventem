@@ -62,6 +62,7 @@ function rowToOrder(row) {
     createdAt: row.created_at,
     profile: row.profile,
     fileName: row.file_name,
+    filePath: row.file_path,
     format: row.format,
     color: row.color,
     sides: row.sides,
@@ -85,6 +86,7 @@ export async function createOrder(order) {
       created_at: order.createdAt,
       profile: order.profile,
       file_name: order.fileName,
+      file_path: order.filePath || null,
       format: order.format,
       color: order.color,
       sides: order.sides,
@@ -128,6 +130,32 @@ export async function updateOrderStatus(id, status) {
     const { error } = await supabase.from("orders").update({ status }).eq("id", id);
     return !error;
   } catch { return false; }
+}
+
+/* ============================================================
+   Fichiers des clients (espace privé « web-uploads »)
+============================================================ */
+function safeFileName(n) {
+  return (n || "fichier").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9._-]+/g, "_").slice(-80);
+}
+
+// Envoie le fichier du client. Renvoie le chemin enregistré, ou null si l'envoi a échoué.
+export async function uploadOrderFile(orderId, file) {
+  try {
+    const path = `orders/${orderId}/${safeFileName(file.name)}`;
+    const { error } = await supabase.storage.from("web-uploads").upload(path, file, {
+      contentType: file.type || "application/octet-stream", upsert: false,
+    });
+    return error ? null : path;
+  } catch { return null; }
+}
+
+// Lien de téléchargement temporaire (1 h), réservé à l'admin connecté.
+export async function getOrderFileUrl(path) {
+  try {
+    const { data, error } = await supabase.storage.from("web-uploads").createSignedUrl(path, 3600, { download: true });
+    return error ? null : data.signedUrl;
+  } catch { return null; }
 }
 
 /* ============================================================

@@ -11,7 +11,11 @@ import {
   getPromos as fetchPromos, upsertPromo, deletePromo as deletePromoRow,
   createOrder, trackOrderPublic, getAllOrders, updateOrderStatus as updateOrderStatusRow,
   adminSignIn, adminSignOut, getAdminSession, onAdminAuthChange,
+  uploadOrderFile, getOrderFileUrl,
 } from "./data";
+import { Catalog, ServiceHeader, CAT_T } from "./catalog";
+import { SpecialOrder } from "./special";
+import { CvOrder } from "./cv";
 
 /* ============================================================
    DESIGN TOKENS — light SaaS surface, blue = trust, green = done,
@@ -19,7 +23,7 @@ import {
    Data: IBM Plex Mono
 ============================================================ */
 const GLOBAL_STYLE = `
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
 @keyframes fadeSlideUp { from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:translateY(0);} }
 .step-anim { animation: fadeSlideUp .5s cubic-bezier(.16,.8,.24,1); }
@@ -138,13 +142,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
    indépendamment du fuseau du visiteur.
 ============================================================ */
 const OPENING_HOURS = [
-  { day: "Lundi", open: 10 * 60, close: 19 * 60 },
-  { day: "Mardi", open: 10 * 60, close: 19 * 60 },
-  { day: "Mercredi", open: 10 * 60, close: 19 * 60 },
-  { day: "Jeudi", open: 10 * 60, close: 19 * 60 },
-  { day: "Vendredi", open: null, close: null },
+  { day: "Lundi", open: 9 * 60, close: 19 * 60 },
+  { day: "Mardi", open: 9 * 60, close: 19 * 60 },
+  { day: "Mercredi", open: 9 * 60, close: 19 * 60 },
+  { day: "Jeudi", open: 9 * 60, close: 19 * 60 },
+  { day: "Vendredi", open: 14 * 60, close: 19 * 60 },
   { day: "Samedi", open: 10 * 60 + 30, close: 19 * 60 },
-  { day: "Dimanche", open: 10 * 60 + 30, close: 19 * 60 },
+  { day: "Dimanche", open: 12 * 60, close: 19 * 60 },
 ];
 const fmtHM = (mins) => `${String(Math.floor(mins / 60)).padStart(2, "0")}h${String(mins % 60).padStart(2, "0")}`;
 const WEEKDAY_FR = { Monday: "Lundi", Tuesday: "Mardi", Wednesday: "Mercredi", Thursday: "Jeudi", Friday: "Vendredi", Saturday: "Samedi", Sunday: "Dimanche" };
@@ -535,7 +539,7 @@ const TRANSLATIONS = {
     orderNotFound: "No order found with this number. Please check the number you received at confirmation.",
   },
 };
-const LANGS = ["fr", "nl", "en"];
+const LANGS = ["nl", "fr", "en"];
 
 /* ============================================================
    Small building blocks
@@ -707,8 +711,16 @@ function CopyCenterOrderAppInner() {
   const [mode, setMode] = useState("order");
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState("particulier");
+  const [service, setService] = useState(null);   // null = catalogue
+  function pickService(s) {
+    const p = s.preset || {};
+    setFormat(p.format || "A4"); setColor(p.color || "nb"); setFinishing(p.finishing || "aucune");
+    setCvPack(p.cvPack || null); setStep(0); setService(s);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  function backToCatalog() { setService(null); setMode("order"); window.scrollTo({ top: 0, behavior: "smooth" }); }
 
-  const [lang, setLang] = useState("fr");
+  const [lang, setLang] = useState("nl");   // néerlandais par défaut
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const T = TRANSLATIONS[lang];
   useEffect(() => {
@@ -786,6 +798,12 @@ function CopyCenterOrderAppInner() {
     setOrders(loaded);
     setVisitCount(typeof count === "number" ? count : 0);
     setOrdersLoading(false);
+  }
+
+  async function handleDownload(path) {
+    const url = await getOrderFileUrl(path);
+    if (url) window.open(url, "_blank", "noopener");
+    else alert("Impossible de télécharger ce fichier. Vérifie que tu es bien connecté.");
   }
 
   async function handleUpdateOrderStatus(id, newStatus) {
@@ -968,13 +986,19 @@ function CopyCenterOrderAppInner() {
     }
     setSubmitting(true);
     const id = "CCZ-" + Date.now().toString().slice(-6);
+    // Le fichier part dans l'espace privé du magasin
+    let filePath = null;
+    if (file) {
+      filePath = await uploadOrderFile(id, file);
+      if (!filePath) { setSubmitting(false); setStorageWarning(true); return; }
+    }
     const newOrder = {
       id, createdAt: new Date().toISOString(), profile,
-      fileName: file ? file.name : T.fileFromShop,
+      fileName: file ? file.name : T.fileFromShop, filePath,
       format, color, sides, finishing, pages, quantity, cvPack,
       promo: promoApplied ? promoApplied.code : null,
       breakdown, customer, status: STATUS_KEYS[0],
-      paymentMethod, paid: paymentMethod === "enligne",
+      paymentMethod: "surplace", paid: false,   // paiement en ligne désactivé pour l'instant
     };
     const ok = await createOrder(newOrder);
     if (!ok) setStorageWarning(true);
@@ -1160,6 +1184,13 @@ function CopyCenterOrderAppInner() {
                           <td className="px-4 py-3">
                             <p className="font-medium text-slate-700">{o.customer?.name}</p>
                             <p className="text-xs text-slate-400">{o.customer?.email}</p>
+                            {o.customer?.phone && <a href={"tel:" + o.customer.phone} className="text-xs text-slate-500 underline">{o.customer.phone}</a>}
+                            <p className="text-xs text-slate-500 mt-1">{o.format} · {o.color} · {o.sides} · {o.pages} p. × {o.quantity}{o.finishing && o.finishing !== "none" ? " · " + o.finishing : ""}</p>
+                            {o.filePath ? (
+                              <button onClick={() => handleDownload(o.filePath)} className="mt-1 text-xs font-semibold text-blue-700 hover:underline">Télécharger le fichier ({o.fileName})</button>
+                            ) : (
+                              <p className="text-xs text-slate-400 mt-1">{o.fileName}</p>
+                            )}
                           </td>
                           <td className="px-4 py-3 font-semibold" style={monoFont}>{eur(o.breakdown?.total || 0)}</td>
                           <td className="px-4 py-3">
@@ -1297,16 +1328,13 @@ function CopyCenterOrderAppInner() {
       <div className="absolute bottom-24 right-1/4 text-slate-200 opacity-70 pointer-events-none float-paper-c hidden md:block"><FileText className="w-8 h-8" /></div>
 
       <div className="relative">
-        <nav className="border-b border-slate-100 bg-white/80 backdrop-blur sticky top-0 z-20">
-          <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-            <button onClick={() => { setMode("order"); scrollToId("commander"); }} className="flex items-center gap-2.5 flex-shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                <Printer className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-semibold text-slate-900 whitespace-nowrap" style={displayFont}>Copy Center <span className="text-slate-400 font-medium">Zaventem</span></span>
+        <nav className="border-b border-slate-100 bg-white sticky top-0 z-20">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between gap-4">
+            <button onClick={backToCatalog} className="flex items-center gap-2.5 flex-shrink-0">
+              <img src={import.meta.env.BASE_URL + "logo.webp"} alt="Copy Center Zaventem" width="720" height="374" className="h-12 sm:h-16 w-auto" />
             </button>
             <div className="hidden md:flex items-center gap-7">
-              <button onClick={() => { setMode("order"); scrollToId("commander"); }} className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">{T.nav.order}</button>
+              <button onClick={backToCatalog} className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">{T.nav.order}</button>
               <button onClick={() => scrollToId("tarifs")} className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">{T.nav.pricing}</button>
               <button onClick={() => scrollToId("contact")} className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">{T.nav.contact}</button>
             </div>
@@ -1422,139 +1450,76 @@ function CopyCenterOrderAppInner() {
               {T.confirm.emailNote}
             </p>
             <button
-              onClick={() => { setStep(0); setFile(null); setOrder(null); setCustomer({ name: "", email: "", phone: "" }); setPages(1); setQuantity(1); setCvPack(null); setPromoApplied(null); setPromoInput(""); setPaymentMethod("surplace"); setCard({ number: "", expiry: "", cvc: "", name: "" }); setCardError(""); }}
+              onClick={() => { setStep(0); setFile(null); setOrder(null); setCustomer({ name: "", email: "", phone: "" }); setPages(1); setQuantity(1); setCvPack(null); setPromoApplied(null); setPromoInput(""); setPaymentMethod("surplace"); setCard({ number: "", expiry: "", cvc: "", name: "" }); setCardError(""); setService(null); window.scrollTo({ top: 0 }); }}
               className="text-sm font-semibold text-blue-600 flex items-center gap-1.5 hover:gap-2.5 transition-all"
             >
               {T.confirm.newOrder} <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
+        ) : !service ? (
+          <Catalog lang={lang} onPick={pickService} />
         ) : (
-          <div className="max-w-3xl mx-auto px-6 py-12">
-            {/* profile selector */}
-            <div className="flex gap-2 mb-6">
-              {[["particulier", T.profiles.particulier, User], ["etudiant", T.profiles.etudiant, GraduationCap], ["entreprise", T.profiles.entreprise, Building2]].map(([key, label, Icon]) => (
+          <div className="max-w-5xl mx-auto px-5 sm:px-6 py-8">
+            <ServiceHeader lang={lang} service={service} onBack={backToCatalog} />
+            <div className="max-w-3xl">
+            {/* type de client */}
+            {service.key !== "cv" && (<>
+            <p className="text-lg font-semibold text-slate-800 mb-3" style={displayFont}>{CAT_T[lang].clientType}</p>
+            <div className="grid grid-cols-3 gap-3 mb-8">
+              {[["particulier", T.profiles.particulier, User], ["entreprise", T.profiles.entreprise, Building2], ["etudiant", T.profiles.etudiant, GraduationCap]].map(([key, label, Icon]) => (
                 <button
                   key={key} onClick={() => setProfile(key)}
                   className={
-                    "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border transition-all duration-200 hover:scale-[1.02] active:scale-95 " +
-                    (profile === key ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm" : "border-slate-200 text-slate-500 bg-white hover:border-slate-300")
+                    "flex flex-col items-center justify-center gap-2 py-5 rounded-2xl text-sm font-semibold border-2 transition-all duration-200 active:scale-95 " +
+                    (profile === key ? "border-blue-700 bg-blue-700 text-white shadow-md" : "border-slate-200 text-slate-600 bg-white hover:border-blue-300")
                   }
                 >
-                  <Icon className="w-4 h-4" /> {label}
+                  <Icon className="w-7 h-7" /> {label}
                 </button>
               ))}
             </div>
 
-            {/* persona-specific panel — this is what actually changes per profile */}
-            <div key={profile} className="mb-10 panel-anim">
-              {profile === "particulier" && (
-                <div className="bg-white border border-slate-100 rounded-2xl px-5 py-4 text-sm text-slate-500">
-                  {T.particulierPanel}
+            </>)}
+            {false && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-8">
+                <div className="flex items-center gap-2 mb-1">
+                  <Pencil className="w-4 h-4 text-blue-600" />
+                  <p className="font-semibold text-slate-800" style={displayFont}>{T.etudiant.cvService}</p>
                 </div>
-              )}
-
-              {profile === "etudiant" && (
-                <div>
-                  <Reveal>
-                    <IconHero
-                      Icon={GraduationCap}
-                      eyebrow={T.etudiant.eyebrow}
-                      title={T.etudiant.title}
-                      subtitle={T.etudiant.subtitle}
-                    />
-                  </Reveal>
-                  <div className="grid sm:grid-cols-3 gap-4 mb-6">
-                    {STUDENT_CARDS.map((c, i) => (
-                      <Reveal key={c.key} delay={i * 100}>
-                        <IconCard
-                          Icon={c.Icon}
-                          title={T.studentCards[c.key].title}
-                          desc={T.studentCards[c.key].desc}
-                          accent={i}
-                          onClick={() => {
-                            if (c.key === "reliure") setFinishing("spirale");
-                            if (c.key === "cv") setCvPack("professionnel");
-                            scrollToId("commander-tool");
-                          }}
-                        />
-                      </Reveal>
-                    ))}
-                  </div>
-
-                  <Reveal>
-                    <div className="bg-white border border-slate-200 rounded-2xl p-6">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Pencil className="w-4 h-4 text-blue-600" />
-                        <p className="font-semibold text-slate-800" style={displayFont}>{T.etudiant.cvService}</p>
-                      </div>
-                      <p className="text-sm text-slate-400 mb-4">{T.etudiant.cvOptional}</p>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {CV_PACKS.map((p) => (
-                          <button
-                            key={p.key}
-                            onClick={() => setCvPack(cvPack === p.key ? null : p.key)}
-                            className={
-                              "text-left rounded-xl border p-4 transition-all duration-200 hover:scale-[1.02] active:scale-95 " +
-                              (cvPack === p.key ? "border-blue-600 bg-blue-50 shadow-sm" : "border-slate-200 hover:border-slate-300")
-                            }
-                          >
-                            <p className="text-sm font-semibold text-slate-800">{T.cvPacks[p.key].label}</p>
-                            <p className="text-lg font-semibold text-blue-700 my-1" style={monoFont}>{eur(pricing.cv[p.key])}</p>
-                            <p className="text-xs text-slate-400 leading-snug">{T.cvPacks[p.key].desc}</p>
-                          </button>
-                        ))}
-                      </div>
-                      {cvPack && (
-                        <button onClick={() => setCvPack(null)} className="text-xs text-slate-400 hover:text-slate-600 mt-3">{T.etudiant.removeService}</button>
-                      )}
-                    </div>
-                  </Reveal>
+                <p className="text-sm text-slate-400 mb-4">{T.etudiant.cvOptional}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {CV_PACKS.map((p) => (
+                    <button
+                      key={p.key}
+                      onClick={() => setCvPack(cvPack === p.key ? null : p.key)}
+                      className={
+                        "text-left rounded-xl border p-4 transition-all duration-200 active:scale-95 " +
+                        (cvPack === p.key ? "border-blue-600 bg-blue-50 shadow-sm" : "border-slate-200 hover:border-slate-300")
+                      }
+                    >
+                      <p className="text-sm font-semibold text-slate-800">{T.cvPacks[p.key].label}</p>
+                      <p className="text-lg font-semibold text-blue-700 my-1" style={monoFont}>{pricing ? eur(pricing.cv[p.key]) : ""}</p>
+                      <p className="text-xs text-slate-400 leading-snug">{T.cvPacks[p.key].desc}</p>
+                    </button>
+                  ))}
                 </div>
-              )}
-
-              {profile === "entreprise" && (
-                <div>
-                  <Reveal>
-                    <IconHero
-                      Icon={Building2}
-                      eyebrow={T.entreprise.eyebrow}
-                      title={T.entreprise.title}
-                      subtitle={T.entreprise.subtitle}
-                    />
-                  </Reveal>
-                  <div className="grid sm:grid-cols-2 gap-4 mb-4">
-                    <Reveal>
-                      <IconCard
-                        Icon={Printer}
-                        title={T.entreprise.card1title}
-                        desc={T.entreprise.card1desc}
-                        accent={1}
-                        onClick={() => scrollToId("commander-tool")}
-                      />
-                    </Reveal>
-                    <Reveal delay={100}>
-                      <IconCard
-                        Icon={Layers}
-                        title={T.entreprise.card2title}
-                        desc={T.entreprise.card2desc}
-                        accent={2}
-                        onClick={() => { setFinishing("spirale"); scrollToId("commander-tool"); }}
-                      />
-                    </Reveal>
-                  </div>
-                  <p className="text-xs uppercase tracking-wide text-slate-400 font-semibold mb-3">{T.entreprise.soon}</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {FUTURE_SERVICES.map((s, i) => (
-                      <Reveal key={s.key} delay={i * 80}>
-                        <SoonTile label={T.futureServices[s.key].label} sub={T.futureServices[s.key].sub} Icon={s.Icon} i={i} />
-                      </Reveal>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
             <div id="commander-tool" />
+            {service.key === "cv" ? (
+              <CvOrder
+                lang={lang} prepFee={pricing.prepFee || 0} prices={pricing.cv} initialStatus={profile === "etudiant" ? "student" : "worker"}
+                onStorageError={() => setStorageWarning(true)}
+                onDone={(o) => { setOrder(o); setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              />
+            ) : service.special ? (
+              <SpecialOrder
+                key={service.key} kind={service.key} lang={lang} profile={profile} prepFee={pricing.prepFee || 0}
+                onStorageError={() => setStorageWarning(true)}
+                onDone={(o) => { setOrder(o); setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              />
+            ) : (<>
 
             {/* stepper */}
             <div className="flex items-center gap-6 mb-8 overflow-x-auto pb-1">
@@ -1795,11 +1760,10 @@ function CopyCenterOrderAppInner() {
                         </div>
                       </button>
                       <button
-                        onClick={() => setPaymentMethod("enligne")}
-                        className={
-                          "text-left rounded-xl border p-4 flex items-start gap-3 transition-all duration-200 hover:scale-[1.01] active:scale-95 " +
-                          (paymentMethod === "enligne" ? "border-blue-600 bg-blue-50 shadow-sm" : "border-slate-200 hover:border-slate-300")
-                        }
+                        disabled
+                        aria-disabled="true"
+                        title="Bientôt disponible"
+                        className="text-left rounded-xl border p-4 flex items-start gap-3 border-slate-200 opacity-50 cursor-not-allowed"
                       >
                         <CreditCard className={"w-5 h-5 mt-0.5 flex-shrink-0 " + (paymentMethod === "enligne" ? "text-blue-600" : "text-slate-400")} />
                         <div>
@@ -1885,6 +1849,8 @@ function CopyCenterOrderAppInner() {
                   </div>
                 </div>
               )}
+            </div>
+            </>)}
             </div>
           </div>
         )}
