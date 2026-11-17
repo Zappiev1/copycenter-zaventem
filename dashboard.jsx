@@ -119,10 +119,10 @@ export function Dashboard({ initialKey, onClose }) {
       <div className="max-w-sm mx-auto mt-12 bg-white border border-slate-200 rounded-2xl p-6">
         <div className="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center mb-4"><KeyRound className="w-5 h-5" /></div>
         <h1 className="text-xl font-semibold text-slate-900 mb-1">Accès réservé</h1>
-        <p className="text-sm text-slate-500 mb-5">Entre le code du magasin (le même que pour la caisse).</p>
-        <label htmlFor="dash-code" className="text-sm font-semibold text-slate-700">Code du magasin</label>
-        <input id="dash-code" autoFocus value={input} onChange={(e) => setInput(e.target.value.toUpperCase())} onKeyDown={(e) => e.key === "Enter" && load(input.trim())}
-          placeholder="XXXX-XXXX-XXXX-XXXX" autoComplete="off" className="mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 tracking-wider focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+        <p className="text-sm text-slate-500 mb-5">Entre ton code d'accès.</p>
+        <label htmlFor="dash-code" className="text-sm font-semibold text-slate-700">Code d'accès</label>
+        <input id="dash-code" autoFocus value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && load(input.trim())}
+          type="password" autoComplete="off" className="mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
         {err && <p className="text-sm text-red-600 mt-2" role="alert">{err}</p>}
         <button type="button" disabled={loading || !input.trim()} onClick={() => load(input.trim())} className="mt-4 w-full rounded-xl bg-slate-900 disabled:opacity-50 text-white font-semibold py-3 flex items-center justify-center gap-2">
           {loading && <Loader2 className="w-4 h-4 animate-spin" />} Ouvrir
