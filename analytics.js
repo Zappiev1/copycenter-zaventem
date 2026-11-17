@@ -66,3 +66,14 @@ export async function fetchStats(key, days) {
 }
 
 export const looksLikeShopCode = (s) => /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(String(s || "").trim().toUpperCase());
+
+/* ---------- Gestion depuis le tableau de bord (protégé par le code) ---------- */
+async function rpcOrThrow(fn, args) {
+  const { data, error } = await supabase.rpc(fn, args);
+  if (error) throw new Error(error.message || "Erreur");
+  return data;
+}
+export const dashPromoList = (key) => rpcOrThrow("dash_promo_list", { p_key: key });
+export const dashPromoSave = (key, code, type, value, until) => rpcOrThrow("dash_promo_save", { p_key: key, p_code: code, p_type: type, p_value: value, p_until: until });
+export const dashPromoDelete = (key, code) => rpcOrThrow("dash_promo_delete", { p_key: key, p_code: code });
+export const dashResetStats = (key) => rpcOrThrow("dash_reset_stats", { p_key: key });

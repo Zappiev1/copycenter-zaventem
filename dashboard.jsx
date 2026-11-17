@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Loader2, LogOut, RefreshCw, Users, Eye, ShoppingBag, Euro, TrendingUp, Tag, Smartphone, Globe2, MousePointerClick, KeyRound, X } from "lucide-react";
-import { fetchStats, markOwnDevice } from "./analytics";
+import { fetchStats, markOwnDevice, dashResetStats } from "./analytics";
+import { PromoAdmin } from "./promoadmin";
 import { getSetting } from "./data";
 
 /* ============================================================
@@ -164,6 +165,8 @@ export function Dashboard({ initialKey, onClose }) {
       <BarList title="Types de commandes" icon={ShoppingBag} rows={map(data.by_kind, KIND)} />
     </div>
 
+    <div className="mb-4"><PromoAdmin dashKey={key} /></div>
+
     <div className="bg-white border border-slate-200 rounded-2xl p-5">
       <h3 className="font-semibold text-slate-900 mb-3">Dernières commandes</h3>
       {(data.recent || []).length === 0 ? <p className="text-sm text-slate-400">Aucune commande pour l'instant.</p> : (
@@ -186,6 +189,12 @@ export function Dashboard({ initialKey, onClose }) {
         </div>
       )}
     </div>
-    <p className="text-xs text-slate-400 mt-4">Mis à jour automatiquement chaque minute. Tes propres visites, depuis cet appareil, ne sont pas comptées.</p>
+    <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
+      <p className="text-xs text-slate-400">Mis à jour automatiquement chaque minute. Tes propres visites, depuis cet appareil, ne sont pas comptées.</p>
+      <button type="button" onClick={async () => {
+        if (!confirm("Remettre toutes les statistiques à zéro ? Les visites et commandes d'avant ne seront plus comptées ici (les commandes restent dans la caisse).")) return;
+        try { await dashResetStats(key); await load(); } catch { alert("Pas de connexion internet."); }
+      }} className="text-xs text-slate-500 hover:text-red-600 underline">Remettre les statistiques à zéro</button>
+    </div>
   </>);
 }

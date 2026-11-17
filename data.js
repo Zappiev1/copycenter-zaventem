@@ -34,7 +34,11 @@ export async function getPromos() {
     const { data, error } = await supabase.from("promo_codes").select("*");
     if (error || !data) return {};
     const obj = {};
-    for (const row of data) obj[row.code] = { type: row.type, value: Number(row.value), label: row.label };
+    const now = Date.now();
+    for (const row of data) {
+      if (row.valid_until && new Date(row.valid_until).getTime() < now) continue;   // code expiré
+      obj[String(row.code).toUpperCase()] = { type: row.type, value: Number(row.value), label: row.label };
+    }
     return obj;
   } catch { return {}; }
 }
