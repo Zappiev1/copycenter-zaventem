@@ -1,5 +1,6 @@
 import { ArrowRight, ChevronRight, Home } from "lucide-react";
 import { PromoBanner } from "./promo";
+import { useSiteConfig } from "./siteconfig";
 
 /* ============================================================
    CATALOGUE — grandes tuiles avec image, inspirées de Print Press.
@@ -232,6 +233,10 @@ function Band({ children }) {
 
 export function Catalog({ lang, onPick }) {
   const C = CAT_T[lang];
+  const cfg = useSiteConfig();
+  // État de chaque service choisi dans le tableau de bord. Les flyers n'ont pas encore de formulaire : jamais plus que « bientôt ».
+  const stateOf = (s) => { const st = cfg.services[s.key] || "on"; return s.key === "flyers" && st === "on" ? "soon" : st; };
+  const visible = SERVICES.filter((s) => stateOf(s) !== "off").map((s) => ({ ...s, soon: stateOf(s) === "soon" }));
   return (
     <div className="max-w-5xl mx-auto px-5 sm:px-6 py-8 sm:py-10">
       <PromoBanner lang={lang} onPick={onPick} />
@@ -239,11 +244,11 @@ export function Catalog({ lang, onPick }) {
         <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>{C.heroTitle}</h1>
         <p className="text-slate-500 mt-2 max-w-xl">{C.heroSub}</p>
       </div>
-      {["print", "photo", "finish"].map((g) => (
+      {["print", "photo", "finish"].filter((g) => visible.some((s) => s.group === g)).map((g) => (
         <section key={g} className="mb-12">
           <Band>{C.groups[g]}</Band>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {SERVICES.filter((s) => s.group === g).map((s) => {
+            {visible.filter((s) => s.group === g).map((s) => {
               const t = C.s[s.key];
               return (
                 <button

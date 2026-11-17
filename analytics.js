@@ -77,3 +77,4 @@ export const dashPromoList = (key) => rpcOrThrow("dash_promo_list", { p_key: key
 export const dashPromoSave = (key, code, type, value, until) => rpcOrThrow("dash_promo_save", { p_key: key, p_code: code, p_type: type, p_value: value, p_until: until });
 export const dashPromoDelete = (key, code) => rpcOrThrow("dash_promo_delete", { p_key: key, p_code: code });
 export const dashResetStats = (key) => rpcOrThrow("dash_reset_stats", { p_key: key });
+export const dashSettingSet = (key, name, value) => rpcOrThrow("dash_setting_set", { p_key: key, p_name: name, p_value: value });

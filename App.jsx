@@ -17,6 +17,7 @@ import { Catalog, ServiceHeader, CAT_T } from "./catalog";
 import { SpecialOrder } from "./special";
 import { CvOrder } from "./cv";
 import { Dashboard } from "./dashboard";
+import { DEFAULT_HOURS, useSiteConfig } from "./siteconfig";
 import { trackVisit, trackEvent, fetchStats } from "./analytics";
 import { LAUNCH_PROMO, isLaunchCode } from "./launchpromo";
 
@@ -144,15 +145,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
    HORAIRES — calculés en direct sur le fuseau Europe/Brussels,
    indépendamment du fuseau du visiteur.
 ============================================================ */
-const OPENING_HOURS = [
-  { day: "Lundi", open: 9 * 60, close: 19 * 60 },
-  { day: "Mardi", open: 9 * 60, close: 19 * 60 },
-  { day: "Mercredi", open: 9 * 60, close: 19 * 60 },
-  { day: "Jeudi", open: 9 * 60, close: 19 * 60 },
-  { day: "Vendredi", open: 14 * 60, close: 19 * 60 },
-  { day: "Samedi", open: 10 * 60 + 30, close: 19 * 60 },
-  { day: "Dimanche", open: 12 * 60, close: 19 * 60 },
-];
+// Horaires : modifiables depuis le tableau de bord (voir siteconfig.js)
+let OPENING_HOURS = DEFAULT_HOURS;
 const fmtHM = (mins) => `${String(Math.floor(mins / 60)).padStart(2, "0")}h${String(mins % 60).padStart(2, "0")}`;
 const WEEKDAY_FR = { Monday: "Lundi", Tuesday: "Mardi", Wednesday: "Mercredi", Thursday: "Jeudi", Friday: "Vendredi", Saturday: "Samedi", Sunday: "Dimanche" };
 function getBrusselsNow() {
@@ -878,7 +872,10 @@ function CopyCenterOrderAppInner() {
   const [bump, setBump] = useState(false);
   const prevTotalRef = useRef(null);
 
+  const siteCfg = useSiteConfig();
+  OPENING_HOURS = siteCfg.hours;
   const [shopStatus, setShopStatus] = useState(() => computeShopStatus());
+  useEffect(() => { setShopStatus(computeShopStatus()); }, [siteCfg.hours]);
   useEffect(() => {
     const id = setInterval(() => setShopStatus(computeShopStatus()), 60000);
     return () => clearInterval(id);

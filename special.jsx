@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Upload, X, Minus, Plus, Loader2, PackageCheck, ImageIcon, FileText } from "lucide-react";
 import { uploadOrderFile, createOrder } from "./data";
 import { LAUNCH_PROMO, PROMO_T, launchDiscount, LaunchPromoField } from "./launchpromo";
+import { useSiteConfig } from "./siteconfig";
 
 /* ============================================================
    Commandes de photos et de cartes de visite
@@ -127,7 +128,10 @@ export function SpecialOrder({ kind, lang, profile, prepFee = 0, onDone, onStora
       url: /heic|heif/i.test(f.type + f.name) ? null : URL.createObjectURL(f),
     }))]);
   }
-  const priceOf = (k) => PHOTO_SIZES.find((s) => s.k === k).price;
+  const cfg = useSiteConfig();
+  const photoSizes = PHOTO_SIZES.map((s) => ({ ...s, price: +(cfg.extra.photo[s.k] ?? s.price) }));
+  const cardPrices = { ...CARD_PRICES, ...cfg.extra.cards };
+  const priceOf = (k) => photoSizes.find((s) => s.k === k).price;
   const upd = (id, patch) => setPhotos((l) => l.map((p) => (p.id === id ? { ...p, ...patch } : p)));
 
   // --- cartes ---
@@ -140,7 +144,7 @@ export function SpecialOrder({ kind, lang, profile, prepFee = 0, onDone, onStora
 
   const subtotal = kind === "photo"
     ? r2(photos.reduce((a, p) => a + priceOf(p.size) * p.qty, 0))
-    : CARD_PRICES[cardQty][cardSides];
+    : +(cardPrices[cardQty] || CARD_PRICES[cardQty])[cardSides];
   // Pas de frais de préparation pour les cartes de visite (prix tout compris).
   const fee = subtotal > 0 && kind !== "cards" ? prepFee : 0;
   const [promoOk, setPromoOk] = useState(null);   // code promo appliqué
@@ -215,7 +219,7 @@ export function SpecialOrder({ kind, lang, profile, prepFee = 0, onDone, onStora
           <div>
             <p className="text-sm font-semibold text-slate-700 mb-2">{S.forAll}</p>
             <div className="flex flex-wrap gap-2">
-              {PHOTO_SIZES.map((s) => (
+              {photoSizes.map((s) => (
                 <Chip key={s.k} on={allSize === s.k} onClick={() => { setAllSize(s.k); setPhotos((l) => l.map((p) => ({ ...p, size: s.k }))); }}>
                   {s.k} · {eur(s.price)}
                 </Chip>
@@ -233,7 +237,7 @@ export function SpecialOrder({ kind, lang, profile, prepFee = 0, onDone, onStora
                   </div>
                   <div className="p-3 space-y-2">
                     <select value={p.size} onChange={(e) => upd(p.id, { size: e.target.value })} className="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm bg-white">
-                      {PHOTO_SIZES.map((s) => <option key={s.k} value={s.k}>{s.k} — {eur(s.price)}</option>)}
+                      {photoSizes.map((s) => <option key={s.k} value={s.k}>{s.k} — {eur(s.price)}</option>)}
                     </select>
                     <div className="flex items-center justify-between gap-2">
                       <Stepper value={p.qty} onChange={(q) => upd(p.id, { qty: q })} />
@@ -278,7 +282,7 @@ export function SpecialOrder({ kind, lang, profile, prepFee = 0, onDone, onStora
           <div>
             <p className="text-sm font-semibold text-slate-700 mb-2">{S.qty}</p>
             <div className="flex flex-wrap gap-2">
-              {Object.keys(CARD_PRICES).map((q) => <Chip key={q} on={+q === cardQty} onClick={() => setCardQty(+q)}>{q} · {eur(CARD_PRICES[q][cardSides])}</Chip>)}
+              {Object.keys(CARD_PRICES).map((q) => <Chip key={q} on={+q === cardQty} onClick={() => setCardQty(+q)}>{q} · {eur(+(cardPrices[q] || CARD_PRICES[q])[cardSides])}</Chip>)}
             </div>
           </div>
         </div>
