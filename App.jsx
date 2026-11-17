@@ -858,6 +858,7 @@ function CopyCenterOrderAppInner() {
 
   const [customer, setCustomer] = useState({ name: "", email: "", phone: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [order, setOrder] = useState(null);
   const [storageWarning, setStorageWarning] = useState(false);
 
@@ -1005,7 +1006,13 @@ function CopyCenterOrderAppInner() {
       paymentMethod: "virement", paid: false,   // paiement par virement (QR) obligatoire avant de commencer
     };
     const ok = await createOrder(newOrder);
-    if (!ok) setStorageWarning(true);
+    if (!ok) {
+      // La commande n'est PAS enregistrée : on ne montre surtout pas « Commande confirmée ».
+      setSubmitting(false);
+      setSubmitError({ nl: "Je bestelling kon niet worden verzonden. Controleer je internetverbinding en probeer opnieuw, of bel ons op +32 465 87 41 93.", fr: "Votre commande n'a pas pu être envoyée. Vérifiez votre connexion et réessayez, ou appelez-nous au +32 465 87 41 93.", en: "Your order could not be sent. Check your connection and try again, or call us on +32 465 87 41 93." }[lang]);
+      return;
+    }
+    setSubmitError("");
     setOrder(newOrder);
     setSubmitting(false);
     setStep(3);
@@ -1847,6 +1854,7 @@ function CopyCenterOrderAppInner() {
                     )}
                   </div>
 
+                  {submitError && <p role="alert" className="mb-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-semibold p-3">{submitError}</p>}
                   <div className="flex justify-between">
                     <button onClick={() => setStep(1)} className="text-slate-500 rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-1.5 hover:text-slate-800 transition-colors">
                       <ChevronLeft className="w-4 h-4" /> {T.step2.back}
