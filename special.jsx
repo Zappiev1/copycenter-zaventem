@@ -140,7 +140,8 @@ export function SpecialOrder({ kind, lang, profile, prepFee = 0, onDone, onStora
   const subtotal = kind === "photo"
     ? r2(photos.reduce((a, p) => a + priceOf(p.size) * p.qty, 0))
     : CARD_PRICES[cardQty][cardSides];
-  const fee = subtotal > 0 ? prepFee : 0;
+  // Pas de frais de préparation pour les cartes de visite (prix tout compris).
+  const fee = subtotal > 0 && kind !== "cards" ? prepFee : 0;
   const total = r2(subtotal + fee);
 
   async function send() {
