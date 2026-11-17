@@ -4,8 +4,7 @@ import {
   Printer, Layers, Sparkles, X, User, GraduationCap, Building2, Phone, Globe,
   Search, ArrowRight, PackageCheck, AlertCircle, Tag, Pencil, MapPin, Mail, Clock,
   CreditCard, Lock, Store, ShieldCheck, LayoutDashboard, Megaphone, Users, TrendingUp,
-  Trash2, Plus, KeyRound, LogOut, Euro,
-  Landmark,
+  Trash2, Plus, KeyRound, LogOut, Euro
 } from "lucide-react";
 import {
   getSetting, setSetting, incrementVisitCount,
@@ -17,7 +16,6 @@ import {
 import { Catalog, ServiceHeader, CAT_T } from "./catalog";
 import { SpecialOrder } from "./special";
 import { CvOrder } from "./cv";
-import { PayTransfer } from "./payment";
 import { LAUNCH_PROMO, isLaunchCode } from "./launchpromo";
 
 /* ============================================================
@@ -224,7 +222,7 @@ const TRANSLATIONS = {
     confirm: {
       title: "Commande confirmée",
       keepNumber: "Conservez ce numéro pour suivre votre commande :",
-      fileLabel: "Fichier", totalPaidLabel: "Total",
+      fileLabel: "Fichier", totalPaidLabel: "Total payé en magasin",
       emailNote: "Un email de confirmation sera envoyé une fois le système de notifications branché à un vrai backend — pour l'instant, gardez le numéro affiché ci-dessus.",
       newOrder: "Passer une nouvelle commande",
     },
@@ -282,7 +280,7 @@ const TRANSLATIONS = {
       title: "Vos coordonnées", name: "Nom", namePlaceholder: "Votre nom",
       email: "Email", emailPlaceholder: "vous@exemple.com",
       phone: "Téléphone (optionnel)", phonePlaceholder: "+32 ...",
-      totalToPay: "Total à payer",
+      totalToPay: "Total à payer en magasin",
       back: "Retour", confirm: "Confirmer la commande",
     },
     payment: {
@@ -299,7 +297,7 @@ const TRANSLATIONS = {
       errorExpiry: "Date d'expiration invalide (MM/AA).",
       errorCvc: "CVC invalide.",
       errorName: "Nom sur la carte requis.",
-      paidOnline: "Payé en ligne", toPayInStore: "À payer par virement", totalToPay: "Total à payer",
+      paidOnline: "Payé en ligne", toPayInStore: "À payer sur place", totalToPay: "Total à payer",
     },
     pricing: {
       title: "Tarifs & simulateur",
@@ -333,7 +331,7 @@ const TRANSLATIONS = {
     confirm: {
       title: "Bestelling bevestigd",
       keepNumber: "Bewaar dit nummer om uw bestelling op te volgen:",
-      fileLabel: "Bestand", totalPaidLabel: "Totaal",
+      fileLabel: "Bestand", totalPaidLabel: "Totaal te betalen in de winkel",
       emailNote: "Er wordt een bevestigingsmail verstuurd zodra het meldingssysteem is gekoppeld aan een echte backend — bewaar voorlopig het bovenstaande nummer.",
       newOrder: "Nieuwe bestelling plaatsen",
     },
@@ -391,7 +389,7 @@ const TRANSLATIONS = {
       title: "Uw gegevens", name: "Naam", namePlaceholder: "Uw naam",
       email: "E-mail", emailPlaceholder: "u@voorbeeld.com",
       phone: "Telefoon (optioneel)", phonePlaceholder: "+32 ...",
-      totalToPay: "Totaal te betalen",
+      totalToPay: "Totaal te betalen in de winkel",
       back: "Terug", confirm: "Bestelling bevestigen",
     },
     payment: {
@@ -408,7 +406,7 @@ const TRANSLATIONS = {
       errorExpiry: "Ongeldige vervaldatum (MM/JJ).",
       errorCvc: "Ongeldige CVC.",
       errorName: "Naam op de kaart is verplicht.",
-      paidOnline: "Online betaald", toPayInStore: "Te betalen via overschrijving", totalToPay: "Totaal te betalen",
+      paidOnline: "Online betaald", toPayInStore: "Te betalen in de winkel", totalToPay: "Totaal te betalen",
     },
     pricing: {
       title: "Tarieven & simulator",
@@ -441,7 +439,7 @@ const TRANSLATIONS = {
     confirm: {
       title: "Order confirmed",
       keepNumber: "Keep this number to track your order:",
-      fileLabel: "File", totalPaidLabel: "Total",
+      fileLabel: "File", totalPaidLabel: "Total to pay in store",
       emailNote: "A confirmation email will be sent once the notification system is connected to a real backend — for now, keep the number shown above.",
       newOrder: "Place a new order",
     },
@@ -499,7 +497,7 @@ const TRANSLATIONS = {
       title: "Your details", name: "Name", namePlaceholder: "Your name",
       email: "Email", emailPlaceholder: "you@example.com",
       phone: "Phone (optional)", phonePlaceholder: "+32 ...",
-      totalToPay: "Total to pay",
+      totalToPay: "Total to pay in store",
       back: "Back", confirm: "Confirm order",
     },
     payment: {
@@ -516,7 +514,7 @@ const TRANSLATIONS = {
       errorExpiry: "Invalid expiry date (MM/YY).",
       errorCvc: "Invalid CVC.",
       errorName: "Name on card is required.",
-      paidOnline: "Paid online", toPayInStore: "To pay by bank transfer", totalToPay: "Total to pay",
+      paidOnline: "Paid online", toPayInStore: "To pay in store", totalToPay: "Total to pay",
     },
     pricing: {
       title: "Pricing & simulator",
@@ -1003,7 +1001,7 @@ function CopyCenterOrderAppInner() {
       format, color, sides, finishing, pages, quantity, cvPack,
       promo: promoApplied ? promoApplied.code : null,
       breakdown, customer, status: STATUS_KEYS[0],
-      paymentMethod: "virement", paid: false,   // paiement par virement (QR) obligatoire avant de commencer
+      paymentMethod: "surplace", paid: false,   // paiement en ligne désactivé pour l'instant
     };
     const ok = await createOrder(newOrder);
     if (!ok) {
@@ -1444,7 +1442,6 @@ function CopyCenterOrderAppInner() {
             <p className="text-slate-500 mb-8">
               {T.confirm.keepNumber} <span className="font-semibold text-slate-900" style={monoFont}>{order.id}</span>
             </p>
-            {!order.paid && <PayTransfer order={order} lang={lang} />}
             <div className="bg-white border border-slate-200 rounded-2xl p-8 mb-6">
               <div className="flex items-center justify-between pb-6 mb-6 border-b border-slate-100">
                 <div><p className="text-xs text-slate-400 mb-1">{T.confirm.fileLabel}</p><p className="text-sm font-medium">{order.fileName}</p></div>
@@ -1754,13 +1751,8 @@ function CopyCenterOrderAppInner() {
                     <span className={"text-2xl font-semibold " + (bump ? "price-bump" : "")} style={monoFont}>{eur(breakdown.total)}</span>
                   </div>
 
-                  {/* Paiement : virement obligatoire (QR code affiché après la commande) */}
-                  <div className="mb-6 flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-900">
-                    <Landmark className="w-5 h-5 mt-0.5 flex-shrink-0 text-blue-700" />
-                    <p>{{ nl: "Je betaalt vooraf via overschrijving: na je bestelling krijg je een QR-code voor je bank-app. We beginnen zodra je betaling binnen is.", fr: "Vous payez à l'avance par virement : après la commande, vous recevez un QR code pour votre appli bancaire. Nous commençons dès réception du paiement.", en: "You pay in advance by bank transfer: after ordering you get a QR code for your banking app. We start once your payment arrives." }[lang]}</p>
-                  </div>
-                  {/* Ancien choix du mode de paiement (masqué) */}
-                  <div className="mb-6 hidden">
+                  {/* Mode de paiement */}
+                  <div className="mb-6">
                     <p className="text-sm font-semibold text-slate-700 mb-2.5">{T.payment.method}</p>
                     <div className="grid sm:grid-cols-2 gap-3">
                       <button
