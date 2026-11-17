@@ -16,6 +16,8 @@ import {
 import { Catalog, ServiceHeader, CAT_T } from "./catalog";
 import { SpecialOrder } from "./special";
 import { CvOrder } from "./cv";
+import { Dashboard } from "./dashboard";
+import { trackVisit, trackEvent, looksLikeShopCode } from "./analytics";
 import { LAUNCH_PROMO, isLaunchCode } from "./launchpromo";
 
 /* ============================================================
@@ -709,7 +711,8 @@ function SoonTile({ label, sub, Icon, i }) {
 function CopyCenterOrderAppInner() {
   const [pricing, setPricing] = useState(null);
   const [promos, setPromos] = useState(null);
-  const [mode, setMode] = useState("order");
+  const [mode, setMode] = useState(() => (typeof location !== "undefined" && location.hash === "#beheer" ? "dash" : "order"));
+  const [dashKey, setDashKey] = useState("");
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState("particulier");
   const [service, setService] = useState(null);   // null = catalogue
@@ -717,6 +720,7 @@ function CopyCenterOrderAppInner() {
     const p = s.preset || {};
     setFormat(p.format || "A4"); setColor(p.color || "nb"); setFinishing(p.finishing || "aucune");
     setCvPack(p.cvPack || null); setStep(0); setService(s);
+    trackEvent("service:" + s.key);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   function backToCatalog() { setService(null); setMode("order"); window.scrollTo({ top: 0, behavior: "smooth" }); }
@@ -766,6 +770,7 @@ function CopyCenterOrderAppInner() {
       setAnnouncementDraft(remoteAnnouncement);
       // simple page-load counter — not unique visitors, just total loads
       await incrementVisitCount();
+      trackVisit((navigator.language || "").slice(0, 2));
     })();
 
     return unsubscribe;
@@ -1020,6 +1025,8 @@ function CopyCenterOrderAppInner() {
     setTrackError(""); setTrackResult(null);
     const id = trackQuery.trim().toUpperCase();
     if (!id) return;
+    // Accès caché au tableau de bord : taper le code du magasin ici.
+    if (looksLikeShopCode(id)) { setTrackQuery(""); setDashKey(id); setMode("dash"); window.scrollTo(0, 0); return; }
     const result = await trackOrderPublic(id);
     if (result) setTrackResult(result);
     else setTrackError(T.orderNotFound);
@@ -1033,6 +1040,11 @@ function CopyCenterOrderAppInner() {
   }
   function scrollToId(id) {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  /* ============ TABLEAU DE BORD (caché) ============ */
+  if (mode === "dash") {
+    return <Dashboard initialKey={dashKey} onClose={() => { setDashKey(""); setMode("order"); try { history.replaceState(null, "", location.pathname); } catch { /* ignore */ } }} />;
   }
 
   /* ============ MODE ADMIN ============ */
@@ -1412,7 +1424,7 @@ function CopyCenterOrderAppInner() {
             <p className="text-slate-500 mb-8">{T.track.subtitle}</p>
             <div className="flex gap-3 mb-8">
               <input
-                value={trackQuery} onChange={(e) => setTrackQuery(e.target.value)}
+                value={trackQuery} onChange={(e) => setTrackQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && trackOrder()}
                 placeholder={T.track.placeholder}
                 className="flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                 style={monoFont}
@@ -2058,7 +2070,6 @@ function CopyCenterOrderAppInner() {
           <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
             <span>© {new Date().getFullYear()} Copy Center Zaventem</span>
             <span>Stationsstraat 46A, 1930 Zaventem · copycenter.a46@gmail.com</span>
-            <button onClick={() => { setMode("admin"); window.scrollTo(0, 0); }} className="text-slate-300 hover:text-slate-500 transition-colors">Admin</button>
           </div>
         </footer>
       </div>
