@@ -17,7 +17,7 @@ import { Catalog, ServiceHeader, CAT_T } from "./catalog";
 import { SpecialOrder } from "./special";
 import { CvOrder } from "./cv";
 import { Dashboard } from "./dashboard";
-import { trackVisit, trackEvent, looksLikeShopCode } from "./analytics";
+import { trackVisit, trackEvent, fetchStats } from "./analytics";
 import { LAUNCH_PROMO, isLaunchCode } from "./launchpromo";
 
 /* ============================================================
@@ -1026,7 +1026,10 @@ function CopyCenterOrderAppInner() {
     const id = trackQuery.trim().toUpperCase();
     if (!id) return;
     // Accès caché au tableau de bord : taper le code du magasin ici.
-    if (looksLikeShopCode(id)) { setTrackQuery(""); setDashKey(id); setMode("dash"); window.scrollTo(0, 0); return; }
+    if (!/^CCZ-\d+$/.test(id)) {
+      const raw = trackQuery.trim();
+      try { await fetchStats(raw, 1); setTrackQuery(""); setDashKey(raw); setMode("dash"); window.scrollTo(0, 0); return; } catch { /* pas le code : suivi normal */ }
+    }
     const result = await trackOrderPublic(id);
     if (result) setTrackResult(result);
     else setTrackError(T.orderNotFound);
