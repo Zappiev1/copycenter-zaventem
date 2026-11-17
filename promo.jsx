@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Tag, Clock, Camera, Contact, Sparkles } from "lucide-react";
 import { SERVICES } from "./catalog";
-import { CV_PROMO, cvPromoActive } from "./cv";
+import { LAUNCH_PROMO as CV_PROMO, launchActive as cvPromoActive } from "./launchpromo";
 
 /* ============================================================
    Bannière promo de la page d'accueil : bandeau défilant + diaporama.
@@ -10,24 +10,24 @@ import { CV_PROMO, cvPromoActive } from "./cv";
 
 const PT = {
   nl: {
-    ticker: ["-20% op je cv met code WELKOM20", "Visitekaartjes vanaf € 15", "Foto's afdrukken vanaf € 0,60", "Bestel online, betaal in de winkel", "Nieuwe acties komen eraan"],
-    cv: { kicker: "Lanceringsactie", title: "-20% op je cv", sub: "Met code", cta: "Maak je cv", ends: "Eindigt over" },
+    ticker: ["-20% op alles met code WELKOM20", "Visitekaartjes vanaf € 15", "Foto's afdrukken vanaf € 0,60", "Bestel online, betaal in de winkel", "Nieuwe acties komen eraan"],
+    cv: { kicker: "Lanceringsactie", title: "-20% op alles", sub: "Met code", cta: "Nu bestellen", ends: "Eindigt over" },
     cards: { kicker: "Nieuw", title: "Visitekaartjes vanaf € 15", sub: "50 tot 1000 stuks, zonder extra kosten", cta: "Bestel je kaartjes" },
     photo: { kicker: "Rechtstreeks vanuit je gsm", title: "Foto's vanaf € 0,60", sub: "9x13, 10x15, 15x15 en 15x20", cta: "Foto's afdrukken" },
     soon: { kicker: "Binnenkort", title: "Meer acties komen eraan", sub: "Flyers en nieuwe promoties: kom snel terug!", cta: null },
     d: "d", h: "u", m: "min", s: "sec", prev: "Vorige", next: "Volgende", go: "Ga naar dia",
   },
   fr: {
-    ticker: ["-20 % sur votre CV avec le code WELKOM20", "Cartes de visite dès 15 €", "Tirage photo dès 0,60 €", "Commandez en ligne, payez en magasin", "De nouvelles promos arrivent"],
-    cv: { kicker: "Offre de lancement", title: "-20 % sur votre CV", sub: "Avec le code", cta: "Créer mon CV", ends: "Se termine dans" },
+    ticker: ["-20 % sur tout avec le code WELKOM20", "Cartes de visite dès 15 €", "Tirage photo dès 0,60 €", "Commandez en ligne, payez en magasin", "De nouvelles promos arrivent"],
+    cv: { kicker: "Offre de lancement", title: "-20 % sur tout", sub: "Avec le code", cta: "Commander", ends: "Se termine dans" },
     cards: { kicker: "Nouveau", title: "Cartes de visite dès 15 €", sub: "De 50 à 1000 pièces, sans frais", cta: "Commander mes cartes" },
     photo: { kicker: "Directement depuis votre gsm", title: "Photos dès 0,60 €", sub: "9x13, 10x15, 15x15 et 15x20", cta: "Imprimer mes photos" },
     soon: { kicker: "Bientôt", title: "D'autres promos arrivent", sub: "Flyers et nouvelles offres : revenez vite !", cta: null },
     d: "j", h: "h", m: "min", s: "s", prev: "Précédent", next: "Suivant", go: "Aller à la diapositive",
   },
   en: {
-    ticker: ["20% off your CV with code WELKOM20", "Business cards from €15", "Photo prints from €0.60", "Order online, pay in store", "New deals coming soon"],
-    cv: { kicker: "Launch offer", title: "20% off your CV", sub: "With code", cta: "Make my CV", ends: "Ends in" },
+    ticker: ["20% off everything with code WELKOM20", "Business cards from €15", "Photo prints from €0.60", "Order online, pay in store", "New deals coming soon"],
+    cv: { kicker: "Launch offer", title: "20% off everything", sub: "With code", cta: "Order now", ends: "Ends in" },
     cards: { kicker: "New", title: "Business cards from €15", sub: "50 to 1000 cards, no extra fees", cta: "Order my cards" },
     photo: { kicker: "Straight from your phone", title: "Photos from €0.60", sub: "9x13, 10x15, 15x15 and 15x20", cta: "Print my photos" },
     soon: { kicker: "Coming soon", title: "More deals on the way", sub: "Flyers and new offers: check back soon!", cta: null },
@@ -60,9 +60,9 @@ function Countdown({ until, P }) {
 
 export function PromoBanner({ lang, onPick }) {
   const P = PT[lang] || PT.nl;
-  const pick = (key) => onPick(SERVICES.find((s) => s.key === key));
+  const pick = (key) => key ? onPick(SERVICES.find((s) => s.key === key)) : document.getElementById("diensten")?.scrollIntoView({ behavior: "smooth" });
   const slides = [
-    cvPromoActive() && { key: "cv", bg: "bg-red-600", text: "text-white", icon: Tag, svc: "cv" },
+    cvPromoActive() && { key: "cv", bg: "bg-red-600", text: "text-white", icon: Tag, svc: null },
     { key: "cards", bg: "bg-blue-700", text: "text-white", icon: Contact, svc: "cards" },
     { key: "photo", bg: "bg-amber-300", text: "text-slate-900", icon: Camera, svc: "photo" },
     { key: "soon", bg: "bg-slate-900", text: "text-white", icon: Sparkles, svc: null },

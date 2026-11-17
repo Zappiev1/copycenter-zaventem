@@ -16,6 +16,7 @@ import {
 import { Catalog, ServiceHeader, CAT_T } from "./catalog";
 import { SpecialOrder } from "./special";
 import { CvOrder } from "./cv";
+import { LAUNCH_PROMO, isLaunchCode } from "./launchpromo";
 
 /* ============================================================
    DESIGN TOKENS — light SaaS surface, blue = trust, green = done,
@@ -270,7 +271,7 @@ const TRANSLATIONS = {
       printing: "Impression", recto: "Recto", rectoverso: "Recto-verso",
       finishing: "Finition", none: "Sans finition", spiral: "Reliure spirale", thermal: "Reliure thermique", laminate: "Plastification",
       pages: "Pages", copies: "Exemplaires",
-      promoCode: "Code promo", promoAppliedWord: "appliqué", promoPlaceholder: "Ex : BIENVENUE10", apply: "Appliquer",
+      promoCode: "Code promo", promoAppliedWord: "appliqué", promoPlaceholder: "Ex : WELKOM20", apply: "Appliquer",
       estimate: "Estimation", printingLine: "Impression ×", finishingLine: "Finition ×", cvService: "Service CV",
       prepFee: "Frais de préparation", discount: "Réduction", total: "Total",
       back: "Retour", continue: "Continuer",
@@ -379,7 +380,7 @@ const TRANSLATIONS = {
       printing: "Afdrukken", recto: "Recto", rectoverso: "Recto-verso",
       finishing: "Afwerking", none: "Zonder afwerking", spiral: "Spiraalbinding", thermal: "Thermische binding", laminate: "Lamineren",
       pages: "Pagina's", copies: "Exemplaren",
-      promoCode: "Kortingscode", promoAppliedWord: "toegepast", promoPlaceholder: "Bijv.: BIENVENUE10", apply: "Toepassen",
+      promoCode: "Kortingscode", promoAppliedWord: "toegepast", promoPlaceholder: "Bijv.: WELKOM20", apply: "Toepassen",
       estimate: "Schatting", printingLine: "Afdrukken ×", finishingLine: "Afwerking ×", cvService: "CV-service",
       prepFee: "Voorbereidingskosten", discount: "Korting", total: "Totaal",
       back: "Terug", continue: "Verdergaan",
@@ -487,7 +488,7 @@ const TRANSLATIONS = {
       printing: "Printing", recto: "Single-sided", rectoverso: "Double-sided",
       finishing: "Finishing", none: "No finishing", spiral: "Spiral binding", thermal: "Thermal binding", laminate: "Lamination",
       pages: "Pages", copies: "Copies",
-      promoCode: "Promo code", promoAppliedWord: "applied", promoPlaceholder: "E.g.: BIENVENUE10", apply: "Apply",
+      promoCode: "Promo code", promoAppliedWord: "applied", promoPlaceholder: "E.g.: WELKOM20", apply: "Apply",
       estimate: "Estimate", printingLine: "Printing ×", finishingLine: "Finishing ×", cvService: "CV service",
       prepFee: "Prep fee", discount: "Discount", total: "Total",
       back: "Back", continue: "Continue",
@@ -961,6 +962,7 @@ function CopyCenterOrderAppInner() {
   function applyPromo() {
     const code = promoInput.trim().toUpperCase();
     if (!code) return;
+    if (isLaunchCode(code)) { setPromoApplied({ type: "percent", value: LAUNCH_PROMO.pct, label: `-${LAUNCH_PROMO.pct}%`, code: LAUNCH_PROMO.code }); setPromoError(""); return; }
     const found = promos[code];
     if (found) { setPromoApplied({ ...found, code }); setPromoError(""); }
     else { setPromoApplied(null); setPromoError(T.promoInvalid); }
