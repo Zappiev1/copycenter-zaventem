@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, PackageCheck, Plus, X, GraduationCap, Briefcase, Camera } from "lucide-react";
+import { Loader2, PackageCheck, Plus, X, GraduationCap, Briefcase, Camera, Tag } from "lucide-react";
 import { uploadOrderFile, createOrder } from "./data";
 import { MAX, eur, r2, input, Chip, Field } from "./special";
 
@@ -8,6 +8,16 @@ import { MAX, eur, r2, input, Chip, Field } from "./special";
    Les questions changent selon le statut (étudiant ou particulier).
 ============================================================ */
 export const CV_PRICES = { simple: 5, professionnel: 10, packEmploi: 15 };
+
+// Actie bij de lancering : -20 % op de cv-service met code WELKOM20, 3 dagen geldig.
+export const CV_PROMO = { code: "WELKOM20", pct: 20, until: new Date("2026-11-20T23:59:59+01:00") };
+export const cvPromoActive = () => Date.now() <= CV_PROMO.until.getTime();
+
+const PROMO_T = {
+  nl: { banner: "Lanceringsactie: -20% op je cv met code", until: "t/m vrijdag 20 november", label: "Kortingscode", ph: "Bijv.: WELKOM20", apply: "Toepassen", ok: "Code toegepast", bad: "Ongeldige of verlopen kortingscode.", disc: "Korting" },
+  fr: { banner: "Offre de lancement : -20 % sur votre CV avec le code", until: "jusqu'au vendredi 20 novembre", label: "Code promo", ph: "Ex. : WELKOM20", apply: "Appliquer", ok: "Code appliqué", bad: "Code promo invalide ou expiré.", disc: "Réduction" },
+  en: { banner: "Launch offer: 20% off your CV with code", until: "until Friday 20 November", label: "Promo code", ph: "E.g.: WELKOM20", apply: "Apply", ok: "Code applied", bad: "Invalid or expired promo code.", disc: "Discount" },
+};
 
 const T = {
   nl: {
@@ -114,9 +124,20 @@ export function CvOrder({ lang, prepFee = 0, prices = CV_PRICES, onDone, onStora
     </Field>
   );
 
+  const PT = PROMO_T[lang] || PROMO_T.nl;
+  const [promoInput, setPromoInput] = useState("");
+  const [promoOk, setPromoOk] = useState(false);
+  const [promoErr, setPromoErr] = useState("");
+  function applyPromo() {
+    const ok = promoInput.trim().toUpperCase() === CV_PROMO.code && cvPromoActive();
+    setPromoOk(ok); setPromoErr(ok ? "" : PT.bad);
+  }
+
+  // Pas de frais de préparation pour le service CV : prix tout compris.
   const subtotal = P[pack];
-  const fee = prepFee;
-  const total = r2(subtotal + fee);
+  const fee = 0;
+  const discount = promoOk && cvPromoActive() ? r2(subtotal * CV_PROMO.pct / 100) : 0;
+  const total = r2(subtotal - discount);
 
   async function send() {
     setErr("");
@@ -139,9 +160,9 @@ export function CvOrder({ lang, prepFee = 0, prices = CV_PRICES, onDone, onStora
       id, createdAt: new Date().toISOString(), profile: status === "student" ? "etudiant" : "particulier",
       fileName: S.label + " – " + T[lang].packs[pack][0], filePath: photoPath,
       format: "CV", color: "couleur", sides: "recto", finishing: "aucune", pages: 1, quantity: 1,
-      cvPack: pack, promo: null,
+      cvPack: pack, promo: discount ? CV_PROMO.code : null,
       customer: { name: `${p.first.trim()} ${p.last.trim()}`, email: p.email.trim(), phone: p.phone.trim(), note: p.note.trim() || undefined },
-      breakdown: { kind: "cv", status, pack, answers, files: photoPath ? [photoPath] : [], subtotal, prepFee: fee, total },
+      breakdown: { kind: "cv", status, pack, answers, files: photoPath ? [photoPath] : [], subtotal, prepFee: fee, discount, promo: discount ? CV_PROMO.code : null, total },
       status: "received", paymentMethod: "surplace", paid: false,
     };
     const ok = await createOrder(order);
@@ -171,6 +192,12 @@ export function CvOrder({ lang, prepFee = 0, prices = CV_PRICES, onDone, onStora
 
   return (
     <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-5 sm:p-8 space-y-8">
+      {cvPromoActive() && (
+        <div className="rounded-2xl bg-amber-300 text-slate-900 px-5 py-4 flex items-start gap-3">
+          <Tag className="w-6 h-6 flex-shrink-0 mt-0.5" />
+          <p className="font-semibold leading-snug">{PT.banner} <span className="font-extrabold bg-white rounded-lg px-2 py-0.5 tracking-wide">{CV_PROMO.code}</span> <span className="font-normal">{PT.until}</span></p>
+        </div>
+      )}
       {/* statut */}
       <div>
         <p className="text-lg font-semibold text-slate-800 mb-3" style={{ fontFamily: "'Sora', sans-serif" }}>{S.status}</p>
@@ -270,7 +297,18 @@ export function CvOrder({ lang, prepFee = 0, prices = CV_PRICES, onDone, onStora
 
       <div className="bg-slate-50 rounded-2xl p-5">
         <div className="flex justify-between text-sm text-slate-600"><span>{S.sub}: {S.packs[pack][0]}</span><span>{eur(subtotal)}</span></div>
-        {fee > 0 && <div className="flex justify-between text-sm text-slate-600 mt-1"><span>{S.prep}</span><span>{eur(fee)}</span></div>}
+        {cvPromoActive() && (
+          <div className="mt-3">
+            <label className="text-sm font-semibold text-slate-700" htmlFor="cv-promo">{PT.label}</label>
+            <div className="flex gap-2 mt-1">
+              <input id="cv-promo" className={input + " uppercase"} maxLength={20} value={promoInput} placeholder={PT.ph}
+                onChange={(e) => { setPromoInput(e.target.value); setPromoErr(""); }} onKeyDown={(e) => e.key === "Enter" && applyPromo()} />
+              <button type="button" onClick={applyPromo} className="flex-shrink-0 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-semibold px-4">{PT.apply}</button>
+            </div>
+            {promoErr && <p className="text-sm text-red-600 mt-1" role="alert">{promoErr}</p>}
+          </div>
+        )}
+        {discount > 0 && <div className="flex justify-between text-sm font-semibold text-green-700 mt-2"><span>{PT.disc} {CV_PROMO.code} (-{CV_PROMO.pct}%)</span><span>-{eur(discount)}</span></div>}
         <div className="flex justify-between items-end mt-3 pt-3 border-t border-slate-200">
           <span className="font-semibold text-slate-800">{S.total}</span>
           <span className="text-3xl font-bold text-slate-900" style={{ fontFamily: "'Sora', sans-serif" }}>{eur(total)}</span>
