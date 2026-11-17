@@ -5,3 +5,13 @@
 html, body, #root {
   height: 100%;
 }
+
+/* Bannière promo : bandeau défilant, code qui pulse, icône qui flotte */
+@keyframes promo-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.promo-marquee { animation: promo-marquee 28s linear infinite; }
+.promo-marquee:hover { animation-play-state: paused; }
+@keyframes promo-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+.promo-pulse { display: inline-block; animation: promo-pulse 1.6s ease-in-out infinite; }
+@keyframes promo-float { 0%, 100% { transform: translateY(0) rotate(-8deg); } 50% { transform: translateY(-10px) rotate(-4deg); } }
+.promo-float { animation: promo-float 5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .promo-marquee, .promo-pulse, .promo-float { animation: none; } }
