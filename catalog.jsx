@@ -1,4 +1,5 @@
 import { ArrowRight, ChevronRight, Home } from "lucide-react";
+import { PromoBanner } from "./promo";
 
 /* ============================================================
    CATALOGUE — grandes tuiles avec image, inspirées de Print Press.
@@ -233,6 +234,7 @@ export function Catalog({ lang, onPick }) {
   const C = CAT_T[lang];
   return (
     <div className="max-w-5xl mx-auto px-5 sm:px-6 py-8 sm:py-10">
+      <PromoBanner lang={lang} onPick={onPick} />
       <div className="mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>{C.heroTitle}</h1>
         <p className="text-slate-500 mt-2 max-w-xl">{C.heroSub}</p>
