@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Upload, X, Minus, Plus, Loader2, PackageCheck, ImageIcon, FileText } from "lucide-react";
 import { uploadOrderFile, createOrder } from "./data";
+import { LAUNCH_PROMO, PROMO_T, launchDiscount, LaunchPromoField } from "./launchpromo";
 
 /* ============================================================
    Commandes de photos et de cartes de visite
@@ -142,7 +143,9 @@ export function SpecialOrder({ kind, lang, profile, prepFee = 0, onDone, onStora
     : CARD_PRICES[cardQty][cardSides];
   // Pas de frais de préparation pour les cartes de visite (prix tout compris).
   const fee = subtotal > 0 && kind !== "cards" ? prepFee : 0;
-  const total = r2(subtotal + fee);
+  const [promoOk, setPromoOk] = useState(false);
+  const discount = launchDiscount(subtotal, promoOk);
+  const total = r2(subtotal - discount + fee);
 
   async function send() {
     setErr("");
@@ -177,7 +180,7 @@ export function SpecialOrder({ kind, lang, profile, prepFee = 0, onDone, onStora
         format: "Foto " + Object.entries(bySize).map(([k, q]) => `${k} ×${q}`).join(", "),
         color: "couleur", sides: "recto", finishing: "aucune", pages: photos.length, quantity: nPrints,
         breakdown: {
-          kind: "photo", files: paths, subtotal, prepFee: fee, total,
+          kind: "photo", files: paths, subtotal, prepFee: fee, discount, promo: discount ? LAUNCH_PROMO.code : null, total,
           items: photos.map((p, i) => ({ file: paths[i], name: p.file.name, size: p.size, qty: p.qty, price: r2(priceOf(p.size) * p.qty) })),
         },
       };
@@ -187,14 +190,14 @@ export function SpecialOrder({ kind, lang, profile, prepFee = 0, onDone, onStora
         format: `Visitekaartjes ${cardQty} st.`,
         color: "couleur", sides: cardSides ? "rectoverso" : "recto", finishing: "aucune", pages: 1, quantity: cardQty,
         breakdown: {
-          kind: "card", files: paths, subtotal, prepFee: fee, total, mode, qty: cardQty, sides: cardSides ? 2 : 1,
+          kind: "card", files: paths, subtotal, prepFee: fee, discount, promo: discount ? LAUNCH_PROMO.code : null, total, mode, qty: cardQty, sides: cardSides ? 2 : 1,
           fields: mode === "make" ? fields : null,
         },
       };
     }
     const full = {
       id, createdAt: new Date().toISOString(), profile, filePath: paths[0] || null,
-      cvPack: null, promo: null, customer, status: "received", paymentMethod: "surplace", paid: false, ...order,
+      cvPack: null, promo: discount ? LAUNCH_PROMO.code : null, customer, status: "received", paymentMethod: "surplace", paid: false, ...order,
     };
     const ok = await createOrder(full);
     setBusy(null);
@@ -294,6 +297,8 @@ export function SpecialOrder({ kind, lang, profile, prepFee = 0, onDone, onStora
       <div className="bg-slate-50 rounded-2xl p-5">
         <div className="flex justify-between text-sm text-slate-600"><span>{S.sub}{kind === "photo" && nPrints ? ` (${nPrints} ${S.prints})` : ""}</span><span>{eur(subtotal)}</span></div>
         {fee > 0 && <div className="flex justify-between text-sm text-slate-600 mt-1"><span>{S.prep}</span><span>{eur(fee)}</span></div>}
+        <LaunchPromoField lang={lang} on={promoOk} setOn={setPromoOk} />
+        {discount > 0 && <div className="flex justify-between text-sm font-semibold text-green-700 mt-2"><span>{(PROMO_T[lang] || PROMO_T.nl).disc} {LAUNCH_PROMO.code} (-{LAUNCH_PROMO.pct}%)</span><span>-{eur(discount)}</span></div>}
         <div className="flex justify-between items-end mt-3 pt-3 border-t border-slate-200">
           <span className="font-semibold text-slate-800">{S.total}</span>
           <span className="text-3xl font-bold text-slate-900" style={{ fontFamily: "'Sora', sans-serif" }}>{eur(total)}</span>
