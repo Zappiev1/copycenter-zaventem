@@ -13,7 +13,7 @@ export const PHOTO_SIZES = [
   { k: "15x20", price: 1.5 },
 ];
 // [recto, recto-verso]
-export const CARD_PRICES = { 100: [25, 32], 250: [39, 49], 500: [59, 75] };
+export const CARD_PRICES = { 50: [15, 18], 100: [25, 30], 250: [45, 55], 500: [70, 85], 1000: [110, 130] };
 
 export const MAX = 50 * 1024 * 1024;
 export const eur = (n) => n.toLocaleString("fr-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";

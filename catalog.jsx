@@ -34,7 +34,7 @@ export const CAT_T = {
       cv:     { name: "CV-service", t1: "Jouw cv,", t2: "professioneel", sub: "Opgemaakt en geprint.", desc: "Je hoeft niets zelf te maken: vul gewoon de vragen in, en wij maken je cv op. De vragen zijn aangepast aan je situatie, student of werkzoekende.", pts: ["Vanaf € 5", "Foto op je cv als je wil", "Op papier en als PDF"] },
       photo:  { name: "Foto's afdrukken", t1: "Foto's", t2: "afdrukken", sub: "Vanuit je gsm, klaar in de winkel.", desc: "Kies je foto's uit je galerij, kies per foto het formaat en het aantal, en haal je afdrukken af in de winkel.", pts: ["9x13 en 10x15: € 0,60 per foto", "15x15: € 1,25 · 15x20: € 1,50", "Rechtstreeks vanuit je gsm"] },
       flyers: { name: "Flyers", t1: "Flyers", t2: "& folders", sub: "Binnenkort beschikbaar.", desc: "", pts: [] },
-      cards:  { name: "Visitekaartjes", t1: "Visite-", t2: "kaartjes", sub: "Jouw ontwerp of door ons gemaakt.", desc: "Stuur je eigen ontwerp, of vul je gegevens in en wij maken je visitekaartje op.", pts: ["100, 250 of 500 stuks", "Enkel voorkant of voor- en achterkant", "Opmaak door ons mogelijk"] },
+      cards:  { name: "Visitekaartjes", t1: "Visite-", t2: "kaartjes", sub: "Jouw ontwerp of door ons gemaakt.", desc: "Stuur je eigen ontwerp, of vul je gegevens in en wij maken je visitekaartje op.", pts: ["50 tot 1000 stuks, vanaf € 15", "Enkel voorkant of voor- en achterkant", "Opmaak door ons mogelijk"] },
     },
   },
   fr: {
@@ -53,7 +53,7 @@ export const CAT_T = {
       cv:     { name: "Service CV", t1: "Votre CV,", t2: "professionnel", sub: "Mis en page et imprimé.", desc: "Vous n'avez rien à préparer : répondez simplement aux questions, et nous créons votre CV. Les questions sont adaptées à votre situation, étudiant ou chercheur d'emploi.", pts: ["À partir de 5 €", "Avec votre photo si vous le souhaitez", "Sur papier et en PDF"] },
       photo:  { name: "Tirage de photos", t1: "Tirage", t2: "de photos", sub: "Depuis votre gsm, prêt en magasin.", desc: "Choisissez vos photos dans votre galerie, le format et le nombre pour chaque photo, et venez chercher vos tirages au magasin.", pts: ["9x13 et 10x15 : 0,60 € la photo", "15x15 : 1,25 € · 15x20 : 1,50 €", "Directement depuis votre gsm"] },
       flyers: { name: "Flyers", t1: "Flyers", t2: "& dépliants", sub: "Bientôt disponible.", desc: "", pts: [] },
-      cards:  { name: "Cartes de visite", t1: "Cartes", t2: "de visite", sub: "Votre design ou créé par nous.", desc: "Envoyez votre propre design, ou remplissez vos informations et nous créons votre carte de visite.", pts: ["100, 250 ou 500 pièces", "Recto seulement ou recto-verso", "Mise en page par nous possible"] },
+      cards:  { name: "Cartes de visite", t1: "Cartes", t2: "de visite", sub: "Votre design ou créé par nous.", desc: "Envoyez votre propre design, ou remplissez vos informations et nous créons votre carte de visite.", pts: ["De 50 à 1000 pièces, dès 15 €", "Recto seulement ou recto-verso", "Mise en page par nous possible"] },
     },
   },
   en: {
@@ -72,7 +72,7 @@ export const CAT_T = {
       cv:     { name: "CV service", t1: "Your CV,", t2: "professional", sub: "Designed and printed.", desc: "Nothing to prepare: just answer the questions and we'll create your CV. The questions are adapted to your situation, student or job seeker.", pts: ["From € 5", "With your photo if you like", "On paper and as a PDF"] },
       photo:  { name: "Photo prints", t1: "Photo", t2: "prints", sub: "From your phone, ready in the shop.", desc: "Pick your photos from your gallery, choose the size and number for each one, and collect your prints in the shop.", pts: ["9x13 and 10x15: € 0.60 per photo", "15x15: € 1.25 · 15x20: € 1.50", "Straight from your phone"] },
       flyers: { name: "Flyers", t1: "Flyers", t2: "& leaflets", sub: "Coming soon.", desc: "", pts: [] },
-      cards:  { name: "Business cards", t1: "Business", t2: "cards", sub: "Your design or made by us.", desc: "Send your own design, or fill in your details and we'll design your business card.", pts: ["100, 250 or 500 cards", "Front only or front and back", "Design by us available"] },
+      cards:  { name: "Business cards", t1: "Business", t2: "cards", sub: "Your design or made by us.", desc: "Send your own design, or fill in your details and we'll design your business card.", pts: ["50 to 1000 cards, from €15", "Front only or front and back", "Design by us available"] },
     },
   },
 };
