@@ -21,7 +21,7 @@ export const SERVICES = [
 export const CAT_T = {
   nl: {
     heroTitle: "Online printen, afhalen in Zaventem",
-    heroSub: "Kies een dienst, stuur je bestand en betaal pas als je het komt ophalen.",
+    heroSub: "Kies een dienst, stuur je bestand, betaal via overschrijving en haal af in de winkel.",
     groups: { print: "Printen & kopiëren", photo: "Foto's, visitekaartjes & flyers", finish: "Afwerking & extra's" },
     tag: { print: "Online bestellen", photo: "Online bestellen", finish: "Online bestellen", soon: "Binnenkort beschikbaar" },
     home: "Home", shop: "Online bestellen", back: "Alle diensten", order: "Bestellen",
@@ -40,7 +40,7 @@ export const CAT_T = {
   },
   fr: {
     heroTitle: "Imprimez en ligne, retirez à Zaventem",
-    heroSub: "Choisissez un service, envoyez votre fichier et payez seulement au retrait.",
+    heroSub: "Choisissez un service, envoyez votre fichier, payez par virement et récupérez en magasin.",
     groups: { print: "Impression & copies", photo: "Photos, cartes de visite & flyers", finish: "Finitions & extras" },
     tag: { print: "Commande en ligne", photo: "Commande en ligne", finish: "Commande en ligne", soon: "Bientôt disponible" },
     home: "Accueil", shop: "Commande en ligne", back: "Tous les services", order: "Commander",
@@ -59,7 +59,7 @@ export const CAT_T = {
   },
   en: {
     heroTitle: "Print online, pick up in Zaventem",
-    heroSub: "Choose a service, send your file and only pay when you pick it up.",
+    heroSub: "Choose a service, send your file, pay by bank transfer and pick up in store.",
     groups: { print: "Printing & copies", photo: "Photos, business cards & flyers", finish: "Finishing & extras" },
     tag: { print: "Order online", photo: "Order online", finish: "Order online", soon: "Coming soon" },
     home: "Home", shop: "Order online", back: "All services", order: "Order",
