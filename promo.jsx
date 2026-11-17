@@ -10,7 +10,7 @@ import { LAUNCH_PROMO as CV_PROMO, launchActive as cvPromoActive } from "./launc
 
 const PT = {
   nl: {
-    ticker: ["-20% op alles met code WELKOM20", "Visitekaartjes vanaf € 15", "Foto's afdrukken vanaf € 0,60", "Bestel online, haal af in de winkel", "Nieuwe acties komen eraan"],
+    ticker: ["-20% op alles met code WELKOM20", "Visitekaartjes vanaf € 15", "Foto's afdrukken vanaf € 0,60", "Bestel online, betaal in de winkel", "Nieuwe acties komen eraan"],
     cv: { kicker: "Lanceringsactie", title: "-20% op alles", sub: "Met code", cta: "Nu bestellen", ends: "Eindigt over" },
     cards: { kicker: "Nieuw", title: "Visitekaartjes vanaf € 15", sub: "50 tot 1000 stuks, zonder extra kosten", cta: "Bestel je kaartjes" },
     photo: { kicker: "Rechtstreeks vanuit je gsm", title: "Foto's vanaf € 0,60", sub: "9x13, 10x15, 15x15 en 15x20", cta: "Foto's afdrukken" },
@@ -18,7 +18,7 @@ const PT = {
     d: "d", h: "u", m: "min", s: "sec", prev: "Vorige", next: "Volgende", go: "Ga naar dia",
   },
   fr: {
-    ticker: ["-20 % sur tout avec le code WELKOM20", "Cartes de visite dès 15 €", "Tirage photo dès 0,60 €", "Commandez en ligne, récupérez en magasin", "De nouvelles promos arrivent"],
+    ticker: ["-20 % sur tout avec le code WELKOM20", "Cartes de visite dès 15 €", "Tirage photo dès 0,60 €", "Commandez en ligne, payez en magasin", "De nouvelles promos arrivent"],
     cv: { kicker: "Offre de lancement", title: "-20 % sur tout", sub: "Avec le code", cta: "Commander", ends: "Se termine dans" },
     cards: { kicker: "Nouveau", title: "Cartes de visite dès 15 €", sub: "De 50 à 1000 pièces, sans frais", cta: "Commander mes cartes" },
     photo: { kicker: "Directement depuis votre gsm", title: "Photos dès 0,60 €", sub: "9x13, 10x15, 15x15 et 15x20", cta: "Imprimer mes photos" },
@@ -26,7 +26,7 @@ const PT = {
     d: "j", h: "h", m: "min", s: "s", prev: "Précédent", next: "Suivant", go: "Aller à la diapositive",
   },
   en: {
-    ticker: ["20% off everything with code WELKOM20", "Business cards from €15", "Photo prints from €0.60", "Order online, pick up in store", "New deals coming soon"],
+    ticker: ["20% off everything with code WELKOM20", "Business cards from €15", "Photo prints from €0.60", "Order online, pay in store", "New deals coming soon"],
     cv: { kicker: "Launch offer", title: "20% off everything", sub: "With code", cta: "Order now", ends: "Ends in" },
     cards: { kicker: "New", title: "Business cards from €15", sub: "50 to 1000 cards, no extra fees", cta: "Order my cards" },
     photo: { kicker: "Straight from your phone", title: "Photos from €0.60", sub: "9x13, 10x15, 15x15 and 15x20", cta: "Print my photos" },

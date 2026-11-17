@@ -29,7 +29,7 @@ const ST = {
     fName: "Naam op de kaart", fJob: "Functie", fCompany: "Bedrijf", fPhone: "Telefoon", fEmail: "E-mail", fWeb: "Website", fAddr: "Adres",
     fLogo: "Logo (optioneel)", fWish: "Wensen (kleuren, stijl…)", qty: "Aantal", sides: "Bedrukking", recto: "Enkel voorkant", rv: "Voor- en achterkant",
     you: "Jouw gegevens", yourName: "Je naam", yourPhone: "Gsm-nummer", yourEmail: "E-mail (optioneel)", phoneHint: "We sturen je een bericht als het klaar is.",
-    note: "Opmerking (optioneel)", sub: "Subtotaal", prep: "Voorbereidingskosten", total: "Totaal", pay: "Je betaalt vooraf via overschrijving (de gegevens krijg je na je bestelling). We beginnen zodra je betaling binnen is.",
+    note: "Opmerking (optioneel)", sub: "Subtotaal", prep: "Voorbereidingskosten", total: "Totaal", pay: "Je betaalt bij het afhalen, contant of met kaart.",
     send: "Bestelling versturen", sending: "Versturen", errName: "Vul je naam in.", errPhone: "Vul een geldig gsm-nummer in.",
     errEmpty: "Voeg eerst foto's toe.", errDesign: "Kies eerst je ontwerp.", errCardName: "Vul de naam op de kaart in.", errBig: "is groter dan 50 MB en werd niet toegevoegd.",
     errSend: "Versturen is mislukt. Controleer je internetverbinding en probeer opnieuw.",
@@ -43,7 +43,7 @@ const ST = {
     fName: "Nom sur la carte", fJob: "Fonction", fCompany: "Société", fPhone: "Téléphone", fEmail: "E-mail", fWeb: "Site web", fAddr: "Adresse",
     fLogo: "Logo (facultatif)", fWish: "Souhaits (couleurs, style…)", qty: "Quantité", sides: "Impression", recto: "Recto seulement", rv: "Recto et verso",
     you: "Vos coordonnées", yourName: "Votre nom", yourPhone: "Numéro de gsm", yourEmail: "E-mail (facultatif)", phoneHint: "Nous vous envoyons un message quand c'est prêt.",
-    note: "Remarque (facultatif)", sub: "Sous-total", prep: "Frais de préparation", total: "Total", pay: "Vous payez à l'avance par virement (les informations s'affichent après la commande). Nous commençons dès réception du paiement.",
+    note: "Remarque (facultatif)", sub: "Sous-total", prep: "Frais de préparation", total: "Total", pay: "Vous payez au retrait, en espèces ou par carte.",
     send: "Envoyer la commande", sending: "Envoi", errName: "Indiquez votre nom.", errPhone: "Indiquez un numéro de gsm valide.",
     errEmpty: "Ajoutez d'abord des photos.", errDesign: "Choisissez d'abord votre design.", errCardName: "Indiquez le nom sur la carte.", errBig: "dépasse 50 Mo et n'a pas été ajouté.",
     errSend: "L'envoi a échoué. Vérifiez votre connexion internet et réessayez.",
@@ -57,7 +57,7 @@ const ST = {
     fName: "Name on the card", fJob: "Job title", fCompany: "Company", fPhone: "Phone", fEmail: "Email", fWeb: "Website", fAddr: "Address",
     fLogo: "Logo (optional)", fWish: "Wishes (colours, style…)", qty: "Quantity", sides: "Printing", recto: "Front only", rv: "Front and back",
     you: "Your details", yourName: "Your name", yourPhone: "Mobile number", yourEmail: "Email (optional)", phoneHint: "We'll message you when it's ready.",
-    note: "Note (optional)", sub: "Subtotal", prep: "Preparation fee", total: "Total", pay: "You pay in advance by bank transfer (details shown after ordering). We start once your payment arrives.",
+    note: "Note (optional)", sub: "Subtotal", prep: "Preparation fee", total: "Total", pay: "You pay when you collect, in cash or by card.",
     send: "Send order", sending: "Sending", errName: "Please enter your name.", errPhone: "Please enter a valid mobile number.",
     errEmpty: "Add some photos first.", errDesign: "Choose your design first.", errCardName: "Please fill in the name on the card.", errBig: "is larger than 50 MB and was not added.",
     errSend: "Sending failed. Check your internet connection and try again.",
@@ -197,7 +197,7 @@ export function SpecialOrder({ kind, lang, profile, prepFee = 0, onDone, onStora
     }
     const full = {
       id, createdAt: new Date().toISOString(), profile, filePath: paths[0] || null,
-      cvPack: null, promo: discount ? LAUNCH_PROMO.code : null, customer, status: "received", paymentMethod: "virement", paid: false, ...order,
+      cvPack: null, promo: discount ? LAUNCH_PROMO.code : null, customer, status: "received", paymentMethod: "surplace", paid: false, ...order,
     };
     const ok = await createOrder(full);
     setBusy(null);

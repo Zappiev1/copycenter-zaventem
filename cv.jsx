@@ -32,7 +32,7 @@ const T = {
     skills: "Vaardigheden", skillsHint: "Bijvoorbeeld: Word & Excel, kassa, klantvriendelijk, heftruck…", hobbies: "Hobby's (optioneel)",
     about: "Vertel kort iets over jezelf (optioneel)", aboutHint: "Wie ben je, wat zijn je sterke punten? Wij maken er een mooie tekst van.",
     letter: "Voor welke job of welk bedrijf is de motivatiebrief?",
-    note: "Opmerking (optioneel)", sub: "Formule", prep: "Voorbereidingskosten", total: "Totaal", pay: "Je betaalt vooraf via overschrijving (de gegevens krijg je na je bestelling). We beginnen zodra je betaling binnen is en laten je weten wanneer je cv klaar is.",
+    note: "Opmerking (optioneel)", sub: "Formule", prep: "Voorbereidingskosten", total: "Totaal", pay: "Je betaalt bij het afhalen. We bellen of sturen je een bericht als je cv klaar is.",
     send: "Aanvraag versturen", sending: "Versturen", req: "Vul de verplichte velden in: voornaam, naam, e-mail en gsm-nummer.", errSend: "Versturen is mislukt. Controleer je internetverbinding en probeer opnieuw.", errBig: "De foto is groter dan 50 MB.",
     label: "CV-service",
   },
@@ -55,7 +55,7 @@ const T = {
     skills: "Compétences", skillsHint: "Par exemple : Word & Excel, caisse, sens du contact, chariot élévateur…", hobbies: "Loisirs (facultatif)",
     about: "Parlez-nous un peu de vous (facultatif)", aboutHint: "Qui êtes-vous, quels sont vos points forts ? Nous en ferons un beau texte.",
     letter: "Pour quel emploi ou quelle entreprise est la lettre de motivation ?",
-    note: "Remarque (facultatif)", sub: "Formule", prep: "Frais de préparation", total: "Total", pay: "Vous payez à l'avance par virement (les informations s'affichent après la commande). Nous commençons dès réception du paiement et vous prévenons quand votre CV est prêt.",
+    note: "Remarque (facultatif)", sub: "Formule", prep: "Frais de préparation", total: "Total", pay: "Vous payez au retrait. Nous vous appelons ou vous envoyons un message quand votre CV est prêt.",
     send: "Envoyer la demande", sending: "Envoi", req: "Remplissez les champs obligatoires : prénom, nom, e-mail et numéro de gsm.", errSend: "L'envoi a échoué. Vérifiez votre connexion internet et réessayez.", errBig: "La photo dépasse 50 Mo.",
     label: "Service CV",
   },
@@ -78,7 +78,7 @@ const T = {
     skills: "Skills", skillsHint: "For example: Word & Excel, till, customer-friendly, forklift…", hobbies: "Hobbies (optional)",
     about: "Tell us a little about yourself (optional)", aboutHint: "Who are you, what are your strengths? We'll turn it into a nice text.",
     letter: "Which job or company is the cover letter for?",
-    note: "Note (optional)", sub: "Package", prep: "Preparation fee", total: "Total", pay: "You pay in advance by bank transfer (details shown after ordering). We start once your payment arrives and let you know when your CV is ready.",
+    note: "Note (optional)", sub: "Package", prep: "Preparation fee", total: "Total", pay: "You pay when you collect. We'll call or message you when your CV is ready.",
     send: "Send request", sending: "Sending", req: "Please fill in the required fields: first name, last name, email and mobile number.", errSend: "Sending failed. Check your internet connection and try again.", errBig: "The photo is larger than 50 MB.",
     label: "CV service",
   },
@@ -150,7 +150,7 @@ export function CvOrder({ lang, prepFee = 0, prices = CV_PRICES, onDone, onStora
       cvPack: pack, promo: discount ? LAUNCH_PROMO.code : null,
       customer: { name: `${p.first.trim()} ${p.last.trim()}`, email: p.email.trim(), phone: p.phone.trim(), note: p.note.trim() || undefined },
       breakdown: { kind: "cv", status, pack, answers, files: photoPath ? [photoPath] : [], subtotal, prepFee: fee, discount, promo: discount ? LAUNCH_PROMO.code : null, total },
-      status: "received", paymentMethod: "virement", paid: false,
+      status: "received", paymentMethod: "surplace", paid: false,
     };
     const ok = await createOrder(order);
     setBusy(false);
