@@ -922,7 +922,7 @@ function CopyCenterOrderAppInner() {
         setStorageWarning(true);
       }
       const remotePromos = await fetchPromos();
-      setPromos(Object.keys(remotePromos).length ? remotePromos : DEFAULT_PROMOS);
+      setPromos(remotePromos || {});   // seuls les codes créés dans le tableau de bord sont valables
     })();
   }, []);
 

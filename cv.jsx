@@ -118,7 +118,7 @@ export function CvOrder({ lang, prepFee = 0, prices = CV_PRICES, onDone, onStora
   );
 
   const PT = { nl: { disc: "Korting" }, fr: { disc: "Réduction" }, en: { disc: "Discount" } }[lang] || { disc: "Korting" };
-  const [promoOk, setPromoOk] = useState(false);
+  const [promoOk, setPromoOk] = useState(null);   // code promo appliqué
 
   // Pas de frais de préparation pour le service CV : prix tout compris.
   const subtotal = P[pack];
@@ -147,9 +147,9 @@ export function CvOrder({ lang, prepFee = 0, prices = CV_PRICES, onDone, onStora
       id, createdAt: new Date().toISOString(), profile: status === "student" ? "etudiant" : "particulier",
       fileName: S.label + " – " + T[lang].packs[pack][0], filePath: photoPath,
       format: "CV", color: "couleur", sides: "recto", finishing: "aucune", pages: 1, quantity: 1,
-      cvPack: pack, promo: discount ? LAUNCH_PROMO.code : null,
+      cvPack: pack, promo: discount ? promoOk.code : null,
       customer: { name: `${p.first.trim()} ${p.last.trim()}`, email: p.email.trim(), phone: p.phone.trim(), note: p.note.trim() || undefined },
-      breakdown: { kind: "cv", status, pack, answers, files: photoPath ? [photoPath] : [], subtotal, prepFee: fee, discount, promo: discount ? LAUNCH_PROMO.code : null, total },
+      breakdown: { kind: "cv", status, pack, answers, files: photoPath ? [photoPath] : [], subtotal, prepFee: fee, discount, promo: discount ? promoOk.code : null, total },
       status: "received", paymentMethod: "surplace", paid: false,
     };
     const ok = await createOrder(order);
@@ -280,7 +280,7 @@ export function CvOrder({ lang, prepFee = 0, prices = CV_PRICES, onDone, onStora
       <div className="bg-slate-50 rounded-2xl p-5">
         <div className="flex justify-between text-sm text-slate-600"><span>{S.sub}: {S.packs[pack][0]}</span><span>{eur(subtotal)}</span></div>
         <LaunchPromoField lang={lang} on={promoOk} setOn={setPromoOk} />
-        {discount > 0 && <div className="flex justify-between text-sm font-semibold text-green-700 mt-2"><span>{PT.disc} {LAUNCH_PROMO.code} (-{LAUNCH_PROMO.pct}%)</span><span>-{eur(discount)}</span></div>}
+        {discount > 0 && <div className="flex justify-between text-sm font-semibold text-green-700 mt-2"><span>{PT.disc} {promoOk?.code} ({promoOk?.label})</span><span>-{eur(discount)}</span></div>}
         <div className="flex justify-between items-end mt-3 pt-3 border-t border-slate-200">
           <span className="font-semibold text-slate-800">{S.total}</span>
           <span className="text-3xl font-bold text-slate-900" style={{ fontFamily: "'Sora', sans-serif" }}>{eur(total)}</span>
