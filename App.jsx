@@ -2050,7 +2050,7 @@ function CopyCenterOrderAppInner() {
             </a>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 gap-4">
             <div className="bg-white border border-slate-200 rounded-xl p-5 flex gap-3 items-start">
               <MapPin className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
               <div><p className="text-sm font-semibold text-slate-800 mb-0.5">{T.contact.address}</p><p className="text-xs text-slate-500">Stationsstraat 46A<br />1930 Zaventem</p></div>
@@ -2059,17 +2059,13 @@ function CopyCenterOrderAppInner() {
               <Phone className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
               <div><p className="text-sm font-semibold text-slate-800 mb-0.5">{T.contact.phoneLabel}</p><a href="tel:+32465874193" className="text-xs text-slate-500 hover:text-blue-600 transition-colors">+32 465 87 41 93</a></div>
             </div>
-            <div className="bg-white border border-slate-200 rounded-xl p-5 flex gap-3 items-start">
-              <Mail className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div><p className="text-sm font-semibold text-slate-800 mb-0.5">{T.contact.email}</p><p className="text-xs text-slate-500 break-all">copycenter.a46@gmail.com</p></div>
-            </div>
           </div>
         </section>
 
         <footer className="border-t border-slate-100 py-8">
           <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
             <span>© {new Date().getFullYear()} Copy Center Zaventem</span>
-            <span>Stationsstraat 46A, 1930 Zaventem · copycenter.a46@gmail.com</span>
+            <span>Stationsstraat 46A, 1930 Zaventem · +32 465 87 41 93</span>
           </div>
         </footer>
       </div>
