@@ -147,6 +147,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 ============================================================ */
 // Horaires : modifiables depuis le tableau de bord (voir siteconfig.js)
 let OPENING_HOURS = DEFAULT_HOURS;
+let CLOSED_DATES = [];   // fermetures exceptionnelles (tableau de bord / réglage closed_dates)
 const fmtHM = (mins) => `${String(Math.floor(mins / 60)).padStart(2, "0")}h${String(mins % 60).padStart(2, "0")}`;
 const WEEKDAY_FR = { Monday: "Lundi", Tuesday: "Mardi", Wednesday: "Mercredi", Thursday: "Jeudi", Friday: "Vendredi", Saturday: "Samedi", Sunday: "Dimanche" };
 function getBrusselsNow() {
@@ -155,19 +156,26 @@ function getBrusselsNow() {
   }).formatToParts(new Date());
   const map = {};
   parts.forEach((p) => { map[p.type] = p.value; });
-  return { day: WEEKDAY_FR[map.weekday], minutes: parseInt(map.hour, 10) * 60 + parseInt(map.minute, 10) };
+  const ymd = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Brussels" }).format(new Date());
+  return { day: WEEKDAY_FR[map.weekday], minutes: parseInt(map.hour, 10) * 60 + parseInt(map.minute, 10), ymd };
 }
 function computeShopStatus() {
-  const { day, minutes } = getBrusselsNow();
+  const { day, minutes, ymd } = getBrusselsNow();
   const idx = OPENING_HOURS.findIndex((d) => d.day === day);
   const today = OPENING_HOURS[idx];
-  if (today.open != null && minutes >= today.open && minutes < today.close) {
+  const addDays = (n) => { const d = new Date(ymd + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+  const closedToday = CLOSED_DATES.includes(ymd);
+  if (!closedToday && today.open != null && minutes >= today.open && minutes < today.close) {
     const left = today.close - minutes;
     return { day, open: true, closesSoon: left <= 60, minutesLeft: left, closeTime: fmtHM(today.close) };
   }
+  // Pas encore ouvert aujourd'hui : on ouvre plus tard dans la journée
+  if (!closedToday && today.open != null && minutes < today.open) {
+    return { day, open: false, isTomorrow: false, nextDay: day, nextOpenTime: fmtHM(today.open) };
+  }
   for (let i = 1; i <= 7; i++) {
     const next = OPENING_HOURS[(idx + i) % 7];
-    if (next.open != null) {
+    if (next.open != null && !CLOSED_DATES.includes(addDays(i))) {
       return { day, open: false, isTomorrow: i === 1, nextDay: next.day, nextOpenTime: fmtHM(next.open) };
     }
   }
@@ -874,8 +882,9 @@ function CopyCenterOrderAppInner() {
 
   const siteCfg = useSiteConfig();
   OPENING_HOURS = siteCfg.hours;
+  CLOSED_DATES = siteCfg.closedDates || [];
   const [shopStatus, setShopStatus] = useState(() => computeShopStatus());
-  useEffect(() => { setShopStatus(computeShopStatus()); }, [siteCfg.hours]);
+  useEffect(() => { setShopStatus(computeShopStatus()); }, [siteCfg.hours, siteCfg.closedDates]);
   useEffect(() => {
     const id = setInterval(() => setShopStatus(computeShopStatus()), 60000);
     return () => clearInterval(id);

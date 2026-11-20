@@ -38,15 +38,15 @@ function normHours(h) {
   });
 }
 
-const defaults = () => ({ hours: DEFAULT_HOURS, services: { ...DEFAULT_SERVICES }, extra: DEFAULT_EXTRA, loaded: false });
+const defaults = () => ({ hours: DEFAULT_HOURS, services: { ...DEFAULT_SERVICES }, extra: DEFAULT_EXTRA, closedDates: [], loaded: false });
 let cache = null;
 let pending = null;
 const listeners = new Set();
 
 export function loadSiteConfig(force = false) {
   if (pending && !force) return pending;
-  pending = Promise.all([getSetting("hours", null), getSetting("services", null), getSetting("extra_prices", null)])
-    .then(([h, s, e]) => {
+  pending = Promise.all([getSetting("hours", null), getSetting("services", null), getSetting("extra_prices", null), getSetting("closed_dates", null)])
+    .then(([h, s, e, cd]) => {
       cache = {
         hours: normHours(h),
         services: { ...DEFAULT_SERVICES, ...(s && typeof s === "object" ? s : {}) },
@@ -54,6 +54,8 @@ export function loadSiteConfig(force = false) {
           photo: { ...DEFAULT_EXTRA.photo, ...(e?.photo || {}) },
           cards: { ...DEFAULT_EXTRA.cards, ...(e?.cards || {}) },
         },
+        // jours de fermeture exceptionnelle, format "AAAA-MM-JJ"
+        closedDates: Array.isArray(cd) ? cd.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)) : [],
         loaded: true,
       };
       listeners.forEach((fn) => fn(cache));
