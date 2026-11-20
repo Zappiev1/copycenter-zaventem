@@ -176,10 +176,10 @@ function computeShopStatus() {
   for (let i = 1; i <= 7; i++) {
     const next = OPENING_HOURS[(idx + i) % 7];
     if (next.open != null && !CLOSED_DATES.includes(addDays(i))) {
-      return { day, open: false, isTomorrow: i === 1, nextDay: next.day, nextOpenTime: fmtHM(next.open) };
+      return { day, open: false, closedToday, isTomorrow: i === 1, nextDay: next.day, nextOpenTime: fmtHM(next.open) };
     }
   }
-  return { day, open: false };
+  return { day, open: false, closedToday };
 }
 function shopStatusLabel(status, T) {
   if (status.open) {
@@ -1982,14 +1982,14 @@ function CopyCenterOrderAppInner() {
           <p className="text-sm text-slate-500 mb-6">{T.contact.subtitle}</p>
 
           {/* Badge ouvert / fermé, calculé en direct */}
-          <div className={"flex items-center gap-3 rounded-2xl border px-5 py-4 mb-6 transition-colors duration-500 " + (shopStatus.open ? "bg-green-50 border-green-200" : "bg-slate-50 border-slate-200")}>
+          <div className={"flex items-center gap-3 rounded-2xl border px-5 py-4 mb-6 transition-colors duration-500 " + (shopStatus.open ? "bg-green-50 border-green-200" : shopStatus.closedToday ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-200")}>
             <span className="relative flex h-3 w-3 flex-shrink-0">
               {shopStatus.open && <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping" />}
-              <span className={"relative inline-flex rounded-full h-3 w-3 " + (shopStatus.open ? "bg-green-500" : "bg-slate-400")} />
+              <span className={"relative inline-flex rounded-full h-3 w-3 " + (shopStatus.open ? "bg-green-500" : shopStatus.closedToday ? "bg-red-500" : "bg-slate-400")} />
             </span>
             <div>
-              <p className={"text-sm font-semibold " + (shopStatus.open ? "text-green-700" : "text-slate-600")}>
-                {shopStatus.open ? T.contact.openNow : T.contact.closedNow}
+              <p className={"text-sm font-semibold " + (shopStatus.open ? "text-green-700" : shopStatus.closedToday ? "text-red-700" : "text-slate-600")}>
+                {shopStatus.open ? T.contact.openNow : shopStatus.closedToday ? { nl: "Vandaag uitzonderlijk gesloten", fr: "Exceptionnellement fermé aujourd'hui", en: "Closed today" }[lang] : T.contact.closedNow}
               </p>
               <p className="text-xs text-slate-500">{shopStatusLabel(shopStatus, T)}</p>
             </div>
@@ -2033,15 +2033,21 @@ function CopyCenterOrderAppInner() {
               <div className="space-y-1">
                 {OPENING_HOURS.map((d) => {
                   const isToday = d.day === shopStatus.day;
+                  const exClosed = isToday && shopStatus.closedToday;   // fermeture exceptionnelle aujourd'hui
+                  const exLabel = { nl: "Gesloten", fr: "Fermé", en: "Closed" }[lang];
                   return (
                     <div key={d.day} className={"flex items-center justify-between text-xs px-2.5 py-1.5 rounded-lg transition-colors " + (isToday ? "bg-blue-50" : "")}>
                       <span className={isToday ? "font-semibold text-blue-700" : "text-slate-600"}>
                         {T.days[d.day]}
                         {isToday && <span className="ml-1.5 text-[9px] font-semibold uppercase tracking-wide text-blue-500">{T.contact.today}</span>}
                       </span>
-                      <span className={isToday ? "font-semibold text-blue-700" : "text-slate-500"} style={monoFont}>
-                        {d.open == null ? T.contact.closed : `${fmtHM(d.open)} – ${fmtHM(d.close)}`}
-                      </span>
+                      {exClosed ? (
+                        <span className="font-semibold text-red-600 whitespace-nowrap">{exLabel}</span>
+                      ) : (
+                        <span className={isToday ? "font-semibold text-blue-700" : "text-slate-500"} style={monoFont}>
+                          {d.open == null ? T.contact.closed : `${fmtHM(d.open)} – ${fmtHM(d.close)}`}
+                        </span>
+                      )}
                     </div>
                   );
                 })}
