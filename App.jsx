@@ -93,6 +93,14 @@ const A3_COULEUR = { fixed: [1.5, 1.4, 1.3, 1.1], tiers: [
   { min: 5, max: 20, rate: 1.0 }, { min: 21, max: 50, rate: 0.8 },
   { min: 51, max: 150, rate: 0.5 }, { min: 151, max: 1000, rate: 0.4 },
 ]};
+// Supplément « papier cartonné 250 g », par feuille et par format (modifiable dans le tableau de bord, onglet Prix)
+const DEFAULT_CARTON = { A5: 0.2, A4: 0.3, A3: 0.5 };
+const PAPER_T = {
+  nl: { title: "Papier", normal: "Normaal (80 g)", carton: "Dik karton (250 g)", sheet: "vel", line: "Toeslag karton", hint: "Stevig papier, ideaal voor kaarten, uitnodigingen en kaften." },
+  fr: { title: "Papier", normal: "Normal (80 g)", carton: "Cartonné (250 g)", sheet: "feuille", line: "Supplément cartonné", hint: "Papier rigide, idéal pour cartes, invitations et couvertures." },
+  en: { title: "Paper", normal: "Standard (80 g)", carton: "Card stock (250 g)", sheet: "sheet", line: "Card stock surcharge", hint: "Sturdy paper, ideal for cards, invitations and covers." },
+};
+
 const DEFAULT_PRICING = {
   printing: {
     A4: { nb: A4_NB, couleur: A4_COULEUR },
@@ -720,7 +728,7 @@ function CopyCenterOrderAppInner() {
   const [service, setService] = useState(null);   // null = catalogue
   function pickService(s) {
     const p = s.preset || {};
-    setFormat(p.format || "A4"); setColor(p.color || "nb"); setFinishing(p.finishing || "aucune");
+    setFormat(p.format || "A4"); setColor(p.color || "nb"); setFinishing(p.finishing || "aucune"); setPaper("normal");
     setCvPack(p.cvPack || null); setStep(0); setService(s);
     trackEvent("service:" + s.key);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -852,6 +860,7 @@ function CopyCenterOrderAppInner() {
   const [format, setFormat] = useState("A4");
   const [color, setColor] = useState("nb");
   const [sides, setSides] = useState("recto");
+  const [paper, setPaper] = useState("normal");   // "normal" (80 g) ou "carton" (250 g)
   const [finishing, setFinishing] = useState("aucune");
   const [pages, setPages] = useState(1);
   const [quantity, setQuantity] = useState(1);
@@ -952,14 +961,18 @@ function CopyCenterOrderAppInner() {
     if (!pricing) return null;
     const printPrice = computePrintPrice(pricing, format, color, pages);
     const finishPrice = computeFinishingPrice(pricing, finishing, format, pages);
+    // Supplément papier cartonné : prix par feuille (recto-verso = 2 pages par feuille)
+    const sheets = sides === "rectoverso" ? Math.ceil(pages / 2) : pages;
+    const cartonRate = (pricing.carton || DEFAULT_CARTON)[format] ?? 0;
+    const cartonPrice = paper === "carton" ? +(cartonRate * sheets).toFixed(2) : 0;
     const cvPrice = cvPack ? pricing.cv[cvPack] : 0;
-    const subtotal = +((printPrice + finishPrice) * quantity + cvPrice).toFixed(2);
+    const subtotal = +((printPrice + finishPrice + cartonPrice) * quantity + cvPrice).toFixed(2);
     let discount = 0;
     if (promoApplied) discount = promoApplied.type === "percent" ? +(subtotal * promoApplied.value / 100).toFixed(2) : promoApplied.value;
     discount = Math.min(discount, subtotal);
     const total = +(subtotal - discount + pricing.prepFee).toFixed(2);
-    return { printPrice, finishPrice, cvPrice, subtotal, discount, total, prepFee: pricing.prepFee };
-  }, [pricing, format, color, pages, finishing, quantity, cvPack, promoApplied]);
+    return { printPrice, finishPrice, cartonPrice, paper, cvPrice, subtotal, discount, total, prepFee: pricing.prepFee };
+  }, [pricing, format, color, pages, finishing, quantity, cvPack, promoApplied, paper, sides]);
 
   useEffect(() => {
     if (!breakdown) return;
@@ -1660,6 +1673,14 @@ function CopyCenterOrderAppInner() {
                     </div>
                   </div>
                   <div className="mb-6">
+                    <p className="text-sm font-semibold text-slate-700 mb-2.5">{PAPER_T[lang].title}</p>
+                    <div className="flex gap-2 flex-wrap">
+                      <OptionPill active={paper === "normal"} onClick={() => setPaper("normal")}>{PAPER_T[lang].normal}</OptionPill>
+                      <OptionPill active={paper === "carton"} onClick={() => setPaper("carton")}>{PAPER_T[lang].carton} (+{eur((pricing?.carton || DEFAULT_CARTON)[format] ?? 0)} / {PAPER_T[lang].sheet})</OptionPill>
+                    </div>
+                    {paper === "carton" && <p className="text-xs text-slate-500 mt-2">{PAPER_T[lang].hint}</p>}
+                  </div>
+                  <div className="mb-6">
                     <p className="text-sm font-semibold text-slate-700 mb-2.5">{T.step1.finishing}</p>
                     <div className="flex gap-2 flex-wrap">
                       <OptionPill active={finishing === "aucune"} onClick={() => setFinishing("aucune")}>{T.step1.none}</OptionPill>
@@ -1706,6 +1727,12 @@ function CopyCenterOrderAppInner() {
                       <span className="text-slate-500">{T.step1.printingLine} {quantity}</span>
                       <span style={monoFont}>{eur(breakdown.printPrice * quantity)}</span>
                     </div>
+                    {breakdown.cartonPrice > 0 && (
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-slate-500">{PAPER_T[lang].line} × {quantity}</span>
+                        <span style={monoFont}>{eur(breakdown.cartonPrice * quantity)}</span>
+                      </div>
+                    )}
                     {finishing !== "aucune" && (
                       <div className="flex justify-between text-sm mb-2">
                         <span className="text-slate-500">{T.step1.finishingLine} {quantity}</span>
