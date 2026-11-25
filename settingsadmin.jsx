@@ -202,6 +202,10 @@ export function PricesAdmin({ dashKey }) {
       <div className="grid grid-cols-3 gap-2 mb-4">
         {[["simple", "Simple"], ["professionnel", "Professionnel"], ["packEmploi", "Pack emploi"]].map(([k, l]) => <Price key={k} label={l} value={p.cv[k]} onChange={(v) => set(["cv", k], v)} />)}
       </div>
+      <p className="text-sm font-semibold text-slate-700 mb-2">Supplément papier cartonné 250 g (par feuille)</p>
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        {["A5", "A4", "A3"].map((k) => <Price key={k} label={k} value={(p.carton || { A5: 0.2, A4: 0.3, A3: 0.5 })[k]} onChange={(v) => setP({ ...p, carton: { ...(p.carton || { A5: 0.2, A4: 0.3, A3: 0.5 }), [k]: v } })} />)}
+      </div>
       <div className="max-w-[220px]"><Price label="Frais de préparation (impressions et photos)" value={p.prepFee} onChange={(v) => set(["prepFee"], v)} /></div>
       <main.Btn onClick={() => main.save(clean(p))} label="Enregistrer les prix" />
     </Card>
