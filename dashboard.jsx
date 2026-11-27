@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2, LogOut, RefreshCw, Users, Eye, ShoppingBag, Euro, TrendingUp, Tag, Smartphone, Globe2, MousePointerClick, KeyRound, X } from "lucide-react";
 import { fetchStats, markOwnDevice, dashResetStats } from "./analytics";
 import { PromoAdmin } from "./promoadmin";
+import { OrdersAdmin } from "./orders";
 import { AnnouncementAdmin, ServicesAdmin, HoursAdmin, PricesAdmin } from "./settingsadmin";
 import { getSetting } from "./data";
 
@@ -80,7 +81,7 @@ export function Dashboard({ initialKey, onClose }) {
   const [key, setKey] = useState(initialKey || ss.get("ccz_dash") || "");
   const [input, setInput] = useState("");
   const [days, setDays] = useState(30);
-  const [tab, setTab] = useState("stats");
+  const [tab, setTab] = useState("orders");
   const [data, setData] = useState(null);
   const [allTime, setAllTime] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -137,7 +138,7 @@ export function Dashboard({ initialKey, onClose }) {
   const conv = data.visitors ? Math.round((data.orders / data.visitors) * 1000) / 10 : 0;
   const map = (obj, names) => Object.entries(obj || {}).map(([k, n]) => ({ label: names[k] || k, n })).sort((a, b) => b.n - a.n);
 
-  const TABS = [["stats", "Statistiques"], ["promos", "Codes promo"], ["prices", "Prix"], ["site", "Site"]];
+  const TABS = [["orders", "Commandes"], ["stats", "Statistiques"], ["promos", "Codes promo"], ["prices", "Prix"], ["site", "Site"]];
   return shell(<>
     <nav className="flex gap-1 mb-5 overflow-x-auto -mx-1 px-1" aria-label="Sections">
       {TABS.map(([k, l]) => (
@@ -145,6 +146,7 @@ export function Dashboard({ initialKey, onClose }) {
           className={"px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap " + (tab === k ? "bg-blue-700 text-white" : "bg-white border border-slate-200 text-slate-600 hover:text-slate-900")}>{l}</button>
       ))}
     </nav>
+    {tab === "orders" && <OrdersAdmin dashKey={key} />}
     {tab === "promos" && <PromoAdmin dashKey={key} />}
     {tab === "prices" && <PricesAdmin dashKey={key} />}
     {tab === "site" && <div className="space-y-4"><AnnouncementAdmin dashKey={key} /><ServicesAdmin dashKey={key} /><HoursAdmin dashKey={key} /></div>}
